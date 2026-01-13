@@ -23,11 +23,15 @@ jobs:
           IMAGE: ghcr.io/${{ github.repository }}
         run: |
           short_sha="${SHA:0:7}"
-          tags="$IMAGE:$BRANCH $IMAGE:$short_sha"
+          tags="$IMAGE:$BRANCH
+          $IMAGE:$short_sha"
           if [ "$BRANCH" = "main" ]; then
-            tags="$tags $IMAGE:latest"
+            tags="$tags
+          $IMAGE:latest"
           fi
-          echo "tags=$tags" >> $GITHUB_OUTPUT
+          echo "tags<<EOF" >> $GITHUB_OUTPUT
+          echo "$tags" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
