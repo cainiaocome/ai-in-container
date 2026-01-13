@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   rm -rf /var/lib/apt/lists/*
 
 # create a non-root user to install Homebrew
-RUN useradd -m builder && chown -R builder:builder /home/builder
+RUN groupadd -g 1000 builder && useradd -u 1000 -g 1000 -m -s /bin/bash builder && chown -R builder:builder /home/builder
 
 # install Homebrew (non-interactive) and pyenv via brew using builder+sudown
 WORKDIR /root
