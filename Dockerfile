@@ -11,7 +11,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
 RUN apt-get update && apt-get install -y --no-install-recommends \
   build-essential curl git ca-certificates pkg-config libssl-dev zlib1g-dev libbz2-dev \
   libreadline-dev libsqlite3-dev libncursesw5-dev libgdbm-dev libnss3-dev liblzma-dev \
-  libffi-dev tk-dev libncurses-dev wget xz-utils procps sudo && \
+  libffi-dev tk-dev libncurses-dev wget xz-utils procps sudo \
+  vim less nano bash-completion zsh locales tzdata iproute2 net-tools lsof htop unzip zip gnupg man-db && \
   rm -rf /var/lib/apt/lists/*
 
 # create a non-root user to install Homebrew
@@ -26,9 +27,10 @@ RUN su - ubuntu -c "NONINTERACTIVE=1 /bin/bash -lc 'curl -fsSL https://raw.githu
 
 # ensure brew is available and install pyenv as ubuntu
 RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\" && \
-  brew install pyenv'"
-RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\" && \
-  brew install --cask copilot-cli'"
+  brew install pyenv && \
+  brew install pyenv-virtualenv && \
+  brew install --cask copilot-cli && \
+  brew install ripgrep bat fd exa fzf'"
 
 USER ubuntu
 WORKDIR /home/ubuntu
