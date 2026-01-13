@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-IMAGE="your-image-name"
-HOME_DIR_ON_HOST="$HOME"
-HOME_DIR_IN_CONTAINER="/root"
+IMAGE="ghcr.io/cainiaocome/ai-in-container:main"
+HOME_DIR_ON_HOST="$HOME/.homes_for_containers/copilot"
+HOME_DIR_IN_CONTAINER="/home/ubuntu"
 CONTAINER_NAME="ai-here-copilot"
 
 # Remove old container if exists
@@ -12,13 +12,13 @@ fi
 
 # Get current folder name and set subfolder path in container
 SUBFOLDER_NAME="$(basename "$(pwd)")"
-CONTAINER_SUBFOLDER="/app/${SUBFOLDER_NAME}"
+CONTAINER_WORKING_FOLDER="/app/${SUBFOLDER_NAME}"
 
 docker run --rm -it \
   --name "${CONTAINER_NAME}" \
   -e GH_TOKEN \
   -v $HOME_DIR_ON_HOST:$HOME_DIR_IN_CONTAINER \
-  -v "$(pwd):${CONTAINER_SUBFOLDER}" \
-  -w "${CONTAINER_SUBFOLDER}" \
+  -v "$(pwd):${CONTAINER_WORKING_FOLDER}" \
+  -w "${CONTAINER_WORKING_FOLDER}" \
   "$IMAGE" \
   copilot --allow-all-tools --allow-all-paths
