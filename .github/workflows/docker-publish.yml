@@ -22,11 +22,6 @@ jobs:
           SHA: ${{ github.sha }}
           IMAGE: ghcr.io/${{ github.repository }}
         run: |
-          # short_sha="${SHA:0:7}"
-          # tags="$IMAGE:$BRANCH $IMAGE:$short_sha"
-          # if [ "$BRANCH" = "main" ]; then
-          #   tags="$tags $IMAGE:latest"
-          # fi
           tags="$IMAGE:$BRANCH"
           echo "tags=$tags" >> $GITHUB_OUTPUT
 
