@@ -30,7 +30,7 @@ RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shell
   brew install pyenv && \
   brew install pyenv-virtualenv && \
   brew install --cask copilot-cli && \
-  brew install ripgrep bat fd exa fzf'"
+  brew install ripgrep bat fd fzf'"
 
 USER ubuntu
 WORKDIR /home/ubuntu
