@@ -11,4 +11,4 @@ docker run --rm -it \
   -e GH_TOKEN \
   -v "$(pwd):/app" \
   "$IMAGE" \
-  copilot
+  copilot --allow-all-tools --allow-all-paths
