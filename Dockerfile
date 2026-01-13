@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   build-essential curl git ca-certificates pkg-config libssl-dev zlib1g-dev libbz2-dev \
   libreadline-dev libsqlite3-dev libncursesw5-dev libgdbm-dev libnss3-dev liblzma-dev \
   libffi-dev tk-dev libncurses-dev wget xz-utils procps sudo \
-  vim less nano bash-completion zsh locales tzdata iproute2 net-tools lsof htop unzip zip gnupg man-db && \
+  vim less nano bash-completion zsh locales tzdata iproute2 net-tools lsof htop unzip zip gnupg man-db tree jq && \
   rm -rf /var/lib/apt/lists/*
 
 # create a non-root user to install Homebrew
