@@ -17,7 +17,7 @@ CONTAINER_WORKING_FOLDER="/app/${SUBFOLDER_NAME}"
 docker run --rm -it \
   --name "${CONTAINER_NAME}" \
   -e GH_TOKEN \
-  -v $HOME_DIR_ON_HOST:$HOME_DIR_IN_CONTAINER \
+  -v "$HOME_DIR_ON_HOST/.copilot/:$HOME_DIR_IN_CONTAINER/.copilot/" \
   -v "$(pwd):${CONTAINER_WORKING_FOLDER}" \
   -w "${CONTAINER_WORKING_FOLDER}" \
   "$IMAGE" \
