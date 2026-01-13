@@ -27,7 +27,7 @@ jobs:
           # if [ "$BRANCH" = "main" ]; then
           #   tags="$tags $IMAGE:latest"
           # fi
-          tags = "$IMAGE:$BRANCH"
+          tags="$IMAGE:$BRANCH"
           echo "tags=$tags" >> $GITHUB_OUTPUT
 
       - name: Set up QEMU
