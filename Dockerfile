@@ -1,9 +1,9 @@
 FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
-  HOME=/home/builder \
-  PYENV_ROOT=/home/builder/.pyenv \
-  PATH=/home/linuxbrew/.linuxbrew/bin:/home/builder/.pyenv/bin:/home/builder/.pyenv/shims:$PATH \
+  HOME=/home/ubuntu \
+  PYENV_ROOT=/home/ubuntu/.pyenv \
+  PATH=/home/linuxbrew/.linuxbrew/bin:/home/ubuntu/.pyenv/bin:/home/ubuntu/.pyenv/shims:$PATH \
   PYTHON_CONFIGURE_OPTS="--enable-optimizations --with-lto" \
   CFLAGS="-O3 -march=native -fomit-frame-pointer -funroll-loops -pipe" \
   LDFLAGS="-Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now"
@@ -15,33 +15,33 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   rm -rf /var/lib/apt/lists/*
 
 # create a non-root user to install Homebrew
-RUN groupadd -g 1000 builder && useradd -u 1000 -g 1000 -m -s /bin/bash builder && chown -R builder:builder /home/builder
+RUN chown -R ubuntu:ubuntu /home/ubuntu
 
-# install Homebrew (non-interactive) and pyenv via brew using builder+sudown
+# install Homebrew (non-interactive) and pyenv via brew using ubuntu+sudown
 WORKDIR /root
-RUN echo 'builder ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/builder && chmod 0440 /etc/sudoers.d/builder
+RUN echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/ubuntu && chmod 0440 /etc/sudoers.d/ubuntu
 
-# run installer as builder (has sudo) non-interactively
-RUN su - builder -c "NONINTERACTIVE=1 /bin/bash -lc 'curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | /bin/bash'"
+# run installer as ubuntu (has sudo) non-interactively
+RUN su - ubuntu -c "NONINTERACTIVE=1 /bin/bash -lc 'curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | /bin/bash'"
 
-# ensure brew is available and install pyenv as builder
-RUN su - builder -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\" && \
+# ensure brew is available and install pyenv as ubuntu
+RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\" && \
   brew install pyenv'"
-RUN su - builder -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\" && \
+RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\" && \
   brew install --cask copilot-cli'"
 
-USER builder
-WORKDIR /home/builder
+USER ubuntu
+WORKDIR /home/ubuntu
 
 # initialize pyenv and install Python 3.14 with optimization flags
-RUN export PYENV_ROOT=/home/builder/.pyenv && \
+RUN export PYENV_ROOT=/home/ubuntu/.pyenv && \
   export PATH=/home/linuxbrew/.linuxbrew/bin:$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH && \
   eval "$(pyenv init -)" && \
   PYTHON_CONFIGURE_OPTS="${PYTHON_CONFIGURE_OPTS}" CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}" pyenv install -v 3.14.2 && \
   pyenv global 3.14.2
 
 # persist env for interactive shells
-RUN echo 'export PYENV_ROOT="/home/builder/.pyenv"' >> /home/builder/.profile && \
-  echo 'export PATH="/home/linuxbrew/.linuxbrew/bin:$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH"' >> /home/builder/.profile
+RUN echo 'export PYENV_ROOT="/home/ubuntu/.pyenv"' >> /home/ubuntu/.profile && \
+  echo 'export PATH="/home/linuxbrew/.linuxbrew/bin:$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH"' >> /home/ubuntu/.profile
 
 CMD ["bash"]
