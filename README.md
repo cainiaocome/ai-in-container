@@ -39,10 +39,10 @@ Run the container manually:
 docker run -it \
   -e GH_TOKEN \
   -v ~/.homes_for_containers/copilot:/home/ubuntu \
-  -v $(pwd):/app/workspace \
-  -w /app/workspace \
+  -v "$(pwd)":/app/$(basename "$(pwd)") \
+  -w /app/$(basename "$(pwd)") \
   ghcr.io/cainiaocome/ai-in-container:main \
-  bash
+  copilot --allow-all-tools --allow-all-paths --resume
 ```
 
 ## Building Locally
