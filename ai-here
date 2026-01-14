@@ -27,4 +27,4 @@ docker run --rm -it \
   -v "$(pwd):${CONTAINER_WORKING_FOLDER}" \
   -w "${CONTAINER_WORKING_FOLDER}" \
   "$IMAGE" \
-  copilot --allow-all-tools --allow-all-paths
+  copilot --allow-all-tools --allow-all-paths --resume
