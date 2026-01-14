@@ -5,6 +5,12 @@ HOME_DIR_ON_HOST="$HOME/.homes_for_containers/copilot"
 HOME_DIR_IN_CONTAINER="/home/ubuntu"
 CONTAINER_NAME="ai-here-copilot"
 
+# Ensure GH_TOKEN is provided
+if [ -z "${GH_TOKEN:-}" ]; then
+  echo "Error: GH_TOKEN environment variable is not set" >&2
+  exit 1
+fi
+
 # Remove old container if exists
 if [ "$(docker ps -aq -f name=^/${CONTAINER_NAME}$)" ]; then
   docker rm -f "${CONTAINER_NAME}"
