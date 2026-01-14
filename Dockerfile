@@ -35,12 +35,9 @@ RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shell
 USER ubuntu
 WORKDIR /home/ubuntu
 
-# initialize pyenv and install Python 3.14 with optimization flags
-RUN export PYENV_ROOT=/home/ubuntu/.pyenv && \
-  export PATH=/home/linuxbrew/.linuxbrew/bin:$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH && \
-  eval "$(pyenv init -)" && \
-  PYTHON_CONFIGURE_OPTS="${PYTHON_CONFIGURE_OPTS}" CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}" pyenv install -v 3.14.2 && \
-  pyenv global 3.14.2
+# script will handle initializing pyenv and installing Python versions at runtime
+COPY scripts/install-python.sh /usr/local/bin/install-python.sh
+RUN chmod +x /usr/local/bin/install-python.sh
 
 # persist env for interactive shells
 RUN echo 'export PYENV_ROOT="/home/ubuntu/.pyenv"' >> /home/ubuntu/.profile && \
