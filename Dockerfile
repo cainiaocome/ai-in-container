@@ -32,12 +32,12 @@ RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shell
   brew install --cask copilot-cli && \
   brew install ripgrep bat fd fzf'"
 
-USER ubuntu
-WORKDIR /home/ubuntu
-
 # script will handle initializing pyenv and installing Python versions at runtime
 COPY scripts/install-python.sh /usr/local/bin/install-python.sh
 RUN chmod +x /usr/local/bin/install-python.sh
+
+USER ubuntu
+WORKDIR /home/ubuntu
 
 # persist env for interactive shells
 RUN echo 'export PYENV_ROOT="/home/ubuntu/.pyenv"' >> /home/ubuntu/.profile && \
