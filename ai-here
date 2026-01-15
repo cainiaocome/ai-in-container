@@ -20,6 +20,16 @@ fi
 SUBFOLDER_NAME="$(basename "$(pwd)")"
 CONTAINER_WORKING_FOLDER="/app/${SUBFOLDER_NAME}"
 
+# Default: pass --resume to copilot; if --new or -n provided, do not pass --resume.
+PASS_RESUME="--resume"
+COPILOT_ARGS=()
+for arg in "$@"; do
+  case "$arg" in
+    -n|--new) PASS_RESUME="";;
+    *) COPILOT_ARGS+=("$arg");;
+  esac
+done
+
 docker run --rm -it \
   --name "${CONTAINER_NAME}" \
   -e GH_TOKEN \
@@ -27,4 +37,4 @@ docker run --rm -it \
   -v "$(pwd):${CONTAINER_WORKING_FOLDER}" \
   -w "${CONTAINER_WORKING_FOLDER}" \
   "$IMAGE" \
-  copilot --allow-all-tools --allow-all-paths --resume
+  copilot --allow-all-tools --allow-all-paths $PASS_RESUME "${COPILOT_ARGS[@]}"
