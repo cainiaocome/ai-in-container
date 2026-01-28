@@ -8,11 +8,33 @@ ENV DEBIAN_FRONTEND=noninteractive \
   CFLAGS="-O3 -march=native -fomit-frame-pointer -funroll-loops -pipe" \
   LDFLAGS="-Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now"
 
+# python dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
   build-essential curl git ca-certificates pkg-config libssl-dev zlib1g-dev libbz2-dev \
   libreadline-dev libsqlite3-dev libncursesw5-dev libgdbm-dev libnss3-dev liblzma-dev \
   libffi-dev tk-dev libncurses-dev wget xz-utils procps sudo \
   vim less nano bash-completion zsh locales tzdata iproute2 net-tools lsof htop unzip zip gnupg man-db tree jq && \
+  rm -rf /var/lib/apt/lists/*
+
+# playwright dependencies
+RUN apt-get install -y libxcb-shm0 \
+  libx11-xcb1 \
+  libxrandr2 \
+  libxcomposite1 \
+  libxcursor1 \
+  libxdamage1 \
+  libxfixes3 \
+  libxi6 \
+  libgtk-3-0t64 \
+  libpangocairo-1.0-0 \
+  libpango-1.0-0 \
+  libatk1.0-0t64 \
+  libcairo-gobject2 \
+  libcairo2 \
+  libgdk-pixbuf-2.0-0 \
+  libglib2.0-0t64 \
+  libasound2t64 \
+  libdbus-1-3 && \
   rm -rf /var/lib/apt/lists/*
 
 # create a non-root user to install Homebrew
