@@ -13,8 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   build-essential curl git ca-certificates pkg-config libssl-dev zlib1g-dev libbz2-dev \
   libreadline-dev libsqlite3-dev libncursesw5-dev libgdbm-dev libnss3-dev liblzma-dev \
   libffi-dev tk-dev libncurses-dev wget xz-utils procps sudo \
-  vim less nano bash-completion zsh locales tzdata iproute2 net-tools lsof htop unzip zip gnupg man-db tree jq && \
-  rm -rf /var/lib/apt/lists/*
+  vim less nano bash-completion zsh locales tzdata iproute2 net-tools lsof htop unzip zip gnupg man-db tree jq
 
 # playwright dependencies
 RUN apt-get install -y libxcb-shm0 \
@@ -34,8 +33,7 @@ RUN apt-get install -y libxcb-shm0 \
   libgdk-pixbuf-2.0-0 \
   libglib2.0-0t64 \
   libasound2t64 \
-  libdbus-1-3 && \
-  rm -rf /var/lib/apt/lists/*
+  libdbus-1-3
 
 # create a non-root user to install Homebrew
 RUN chown -R ubuntu:ubuntu /home/ubuntu
