@@ -63,4 +63,7 @@ WORKDIR /home/ubuntu
 RUN echo 'export PYENV_ROOT="/home/ubuntu/.pyenv"' >> /home/ubuntu/.profile && \
   echo 'export PATH="/home/linuxbrew/.linuxbrew/bin:$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH"' >> /home/ubuntu/.profile
 
+# default pyenv
+RUN echo "testenv" > /.python-version
+
 CMD ["bash"]
