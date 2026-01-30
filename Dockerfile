@@ -17,6 +17,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN apt-get install -y python3 python3-pip
 
+RUN pip install playwright && python3 -m playwright install-deps chromium && pip uninstall -y playwright
+
 # create a non-root user to install Homebrew
 RUN chown -R ubuntu:ubuntu /home/ubuntu
 
@@ -33,8 +35,6 @@ RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shell
   brew install pyenv-virtualenv && \
   brew install --cask copilot-cli && \
   brew install ripgrep bat fd fzf uv'"
-
-RUN su - ubuntu -c "bash -lc 'pip install playwright && playwright install-deps && pip uninstall -y playwright'"
 
 # default pyenv
 RUN echo "testenv" > /.python-version
