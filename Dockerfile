@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libffi-dev tk-dev libncurses-dev wget xz-utils procps sudo \
   vim less nano bash-completion zsh locales tzdata iproute2 net-tools lsof htop unzip zip gnupg man-db tree jq
 
-RUN apt-get install -y python3 && \
+RUN apt-get install -y python3 python3-pip && \
   pip install playwright && \
   playwright install-deps && \
   pip uninstall -y playwright 
