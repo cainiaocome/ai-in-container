@@ -15,8 +15,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libffi-dev tk-dev libncurses-dev wget xz-utils procps sudo \
   vim less nano bash-completion zsh locales tzdata iproute2 net-tools lsof htop unzip zip gnupg man-db tree jq
 
+# chromium dependencies for playwright
 RUN apt-get install -y python3 python3-pip python3-venv
-
 RUN python3 -m venv /tmp/playwright-venv && \
   /tmp/playwright-venv/bin/pip install playwright && \
   /tmp/playwright-venv/bin/playwright install-deps chromium && \
