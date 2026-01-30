@@ -20,12 +20,21 @@ fi
 SUBFOLDER_NAME="$(basename "$(pwd)")"
 CONTAINER_WORKING_FOLDER="/app/${SUBFOLDER_NAME}"
 
+# Check for --dev flag to change image tag
+for arg in "$@"; do
+  if [ "$arg" = "--dev" ]; then
+    IMAGE="ghcr.io/cainiaocome/ai-in-container:dev"
+    break
+  fi
+done
+
 # Default: pass --resume to copilot; if --new or -n provided, do not pass --resume.
 PASS_RESUME="--resume"
 COPILOT_ARGS=()
 for arg in "$@"; do
   case "$arg" in
   -n | --new) PASS_RESUME="" ;;
+  --dev) ;;
   *) COPILOT_ARGS+=("$arg") ;;
   esac
 done
