@@ -37,7 +37,12 @@ RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shell
   brew install pyenv && \
   brew install pyenv-virtualenv && \
   brew install --cask copilot-cli && \
-  brew install ripgrep bat fd fzf uv'"
+  brew install ripgrep bat fd fzf uv && \
+  brew install go node'"
+
+# install TypeScript globally
+RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\" && \
+  npm install -g typescript'"
 
 # default pyenv
 RUN echo "testenv" > /.python-version
