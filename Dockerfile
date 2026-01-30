@@ -17,7 +17,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN apt-get install -y python3 python3-pip
 
-RUN pip install playwright && python3 -m playwright install-deps chromium && pip uninstall -y playwright
+RUN python3 -m venv /tmp/playwright-venv && \
+  /tmp/playwright-venv/bin/pip install playwright && \
+  /tmp/playwright-venv/bin/playwright install-deps chromium && \
+  rm -rf /tmp/playwright-venv
 
 # create a non-root user to install Homebrew
 RUN chown -R ubuntu:ubuntu /home/ubuntu
