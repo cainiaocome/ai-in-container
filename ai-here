@@ -42,6 +42,7 @@ done
 docker run --rm -it \
   --name "${CONTAINER_NAME}" \
   -e GH_TOKEN \
+  -e "DOCKER_HOST=ssh://root@pve3test" \
   -v "$HOME_DIR_ON_HOST/:$HOME_DIR_IN_CONTAINER/" \
   -v "$(pwd):${CONTAINER_WORKING_FOLDER}" \
   -w "${CONTAINER_WORKING_FOLDER}" \
