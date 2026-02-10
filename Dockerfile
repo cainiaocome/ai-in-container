@@ -3,7 +3,7 @@ FROM ubuntu:24.04
 ENV DEBIAN_FRONTEND=noninteractive \
   HOME=/home/ubuntu \
   PYENV_ROOT=/home/ubuntu/.pyenv \
-  PATH=/home/linuxbrew/.linuxbrew/bin:/home/ubuntu/.pyenv/bin:/home/ubuntu/.pyenv/shims:$PATH \
+  PATH=/home/ubuntu/.pyenv/bin:/home/ubuntu/.pyenv/shims:/home/linuxbrew/.linuxbrew/bin:$PATH \
   PYTHON_CONFIGURE_OPTS="--enable-optimizations --with-lto" \
   CFLAGS="-O3 -march=native -fomit-frame-pointer -funroll-loops -pipe" \
   LDFLAGS="-Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now"
@@ -60,7 +60,9 @@ USER ubuntu
 WORKDIR /home/ubuntu
 
 # persist env for interactive shells
+# not necessary though, we have defined environment variable globally at head already
+# the home folder is mounted as well
 RUN echo 'export PYENV_ROOT="/home/ubuntu/.pyenv"' >> /home/ubuntu/.profile && \
-  echo 'export PATH="/home/linuxbrew/.linuxbrew/bin:$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH"' >> /home/ubuntu/.profile
+  echo 'export PATH="$PYENV_ROOT/bin:$PYENV_ROOT/shims:/home/linuxbrew/.linuxbrew/bin:$PATH"' >> /home/ubuntu/.profile
 
 CMD ["bash"]
