@@ -42,6 +42,7 @@ RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shell
   brew install --cask copilot-cli && \
   brew install ripgrep bat fd fzf uv && \
   brew install gh && \
+  brew install docker docker-compose && \
   brew install go node'"
 
 # install TypeScript globally
