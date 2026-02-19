@@ -44,7 +44,7 @@ RUN su - ubuntu -c "NONINTERACTIVE=1 /bin/bash -lc 'curl -fsSL https://raw.githu
 RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\" && \
   brew install pyenv && \
   brew install pyenv-virtualenv && \
-  brew install --cask copilot-cli && \
+  brew install --cask copilot-cli codex && \
   brew install ripgrep bat fd fzf uv && \
   brew install gh && \
   brew install docker docker-compose && \
