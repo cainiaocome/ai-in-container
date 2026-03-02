@@ -13,7 +13,15 @@ fi
 
 # Remove old container if exists
 if [ "$(docker ps -aq -f name=^/${CONTAINER_NAME}$)" ]; then
-  docker rm -f "${CONTAINER_NAME}"
+  echo "Container ${CONTAINER_NAME} already exists."
+  read -p "Do you want to remove it? [y/N] " REPLY
+  case "$REPLY" in
+  [yY] | [yY][eE][sS]) docker rm -f "${CONTAINER_NAME}" ;;
+  *)
+    echo "Aborting."
+    exit 1
+    ;;
+  esac
 fi
 
 # Get current folder name and set subfolder path in container
