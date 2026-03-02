@@ -21,7 +21,7 @@ RUN apt-get install -y openssh-client
 RUN apt-get install -y sudo wget git curl \
   vim less nano bash-completion zsh locales tzdata \
   iproute2 net-tools lsof htop unzip zip gnupg man-db tree jq \
-  rsync
+  rsync postgresql-client
 
 # chromium dependencies for playwright
 RUN apt-get install -y python3 python3-pip python3-venv
