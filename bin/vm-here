@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+IMAGE="ghcr.io/cainiaocome/ai-in-container:main"
+CONTAINER_NAME="vm-here"
+
+# Check for --dev flag to change image tag
+for arg in "$@"; do
+  if [ "$arg" = "--dev" ]; then
+    IMAGE="ghcr.io/cainiaocome/ai-in-container:dev"
+    break
+  fi
+done
+
+# Remove old container if exists
+if [ "$(docker ps -aq -f name=^/${CONTAINER_NAME}$)" ]; then
+  docker rm -f "${CONTAINER_NAME}"
+fi
+
+# Get current folder name and set subfolder path in container
+SUBFOLDER_NAME="$(basename "$(pwd)")"
+CONTAINER_WORKING_FOLDER="/app/${SUBFOLDER_NAME}"
+
+docker run --rm -it \
+  --name "${CONTAINER_NAME}" \
+  -v "$(pwd):${CONTAINER_WORKING_FOLDER}" \
+  -w "${CONTAINER_WORKING_FOLDER}" \
+  "$IMAGE" \
+  bash

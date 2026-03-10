@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd -P)"
+# shellcheck source=bin/_agent-here-common.sh
+source "${SCRIPT_DIR}/_agent-here-common.sh"
+
+agent_here_init "$@"
+
+copilot_command=(copilot --allow-all-tools --allow-all-paths)
+if [ "${AGENT_HERE_NEW_SESSION}" -eq 0 ]; then
+  copilot_command+=(--resume)
+fi
+copilot_command+=("${AGENT_HERE_ARGS[@]}")
+
+agent_here_run "${copilot_command[@]}"

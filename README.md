@@ -1,96 +1,55 @@
 # AI in Container
 
-A Docker image based on Ubuntu 24.04 featuring Python 3.14.2, GitHub Copilot CLI, and modern development tools.
+A Docker image based on Ubuntu 24.04 with the major terminal-first coding agents preinstalled, including GitHub Copilot CLI, Codex CLI, and Claude Code.
 
 ## Features
 
 - **Ubuntu 24.04** base image
 - **Homebrew** package manager
 - **pyenv** for Python version management
-- **Python 3.14.2** with performance optimizations (LTO, O3, native architecture)
-- **GitHub Copilot CLI** for AI-powered terminal assistance
-- **Modern CLI tools**: ripgrep, bat, fd, fzf
-- **Standard utilities**: git, vim, htop, tree, jq, and more
+- **Python 3.14.2** with performance optimizations
+- **AI agents**: GitHub Copilot CLI, Codex CLI, Claude Code
+- **Modern CLI tools**: ripgrep, bat, fd, fzf, uv, jq, tree
 
 ## Quick Start
 
-Use the `ai-here` script to run Copilot CLI in the current directory:
+Use any launcher from `bin/`:
 
 ```bash
-./ai-here
+./bin/ai-here
+./bin/copilot-here
+./bin/codex-here
+./bin/claude-here
 ```
 
-This will:
-- Pull the latest image from GitHub Container Registry
-- Mount your current directory to `/app/{folder-name}` in the container
-- Persist home directory at `~/.homes_for_containers/copilot`
-- Start GitHub Copilot CLI with full tool access
+Each launcher will:
+- mount your current directory to `/app/{folder-name}` in the container
+- persist agent state in `~/.homes_for_containers/copilot`
+- reuse the same container image, with an optional `--dev` tag switch
+- start the selected coding agent with permissive flags enabled
+
+## Launcher Behavior
+
+- `ai-here` launches GitHub Copilot CLI
+- `copilot-here` is a symlink to `ai-here`
+- `codex-here` launches Codex CLI with `--yolo --search`
+- `claude-here` launches Claude Code with `--dangerously-skip-permissions --chrome`
+
+By default the launchers resume the last session when the agent supports it. Pass `-n` or `--new` to start a fresh session instead. Pass `--dev` to use `ghcr.io/cainiaocome/ai-in-container:dev`.
 
 ## Prerequisites
 
 - Docker installed and running
-- `GH_TOKEN` environment variable set with GitHub authentication token
-
-## Manual Usage
-
-Run the container manually:
-
-```bash
-docker run -it \
-  -e GH_TOKEN \
-  -v ~/.homes_for_containers/copilot:/home/ubuntu \
-  -v "$(pwd)":/app/$(basename "$(pwd)") \
-  -w /app/$(basename "$(pwd)") \
-  ghcr.io/cainiaocome/ai-in-container:main \
-  copilot --allow-all-tools --allow-all-paths --resume
-```
+- Authentication for the agent you want to use, either through environment variables such as `GH_TOKEN`, `OPENAI_API_KEY`, and `ANTHROPIC_API_KEY`, or via the persisted home directory
 
 ## Building Locally
-
-Build the Docker image:
 
 ```bash
 docker build -t ai-in-container .
 ```
 
-## CI/CD
-
-The repository includes a GitHub Actions workflow that automatically:
-- Builds the Docker image on every push
-- Tags images with the branch name
-- Pushes to GitHub Container Registry (ghcr.io)
-
-## Installed Tools
-
-### Development Tools
-- Python 3.14.2 (via pyenv)
-- Git, curl, wget
-- Build essentials (gcc, make, pkg-config)
-
-### Editors
-- vim, nano
-
-### System Utilities
-- htop, tree, jq
-- less, man-db
-- procps, net-tools, iproute2
-
-### Modern CLI Tools
-- **ripgrep** - Fast recursive search
-- **bat** - Cat clone with syntax highlighting
-- **fd** - Fast find alternative
-- **fzf** - Fuzzy finder
-
-### AI Assistant
-- GitHub Copilot CLI
-
 ## Image Tags
 
-Images are tagged with the branch name:
-- `ghcr.io/cainiaocome/ai-in-container:main` - Latest from main branch
-- `ghcr.io/cainiaocome/ai-in-container:{branch}` - Other branches
-
-## License
-
-This project is open source and available for use.
-# Test trigger
+- `ghcr.io/cainiaocome/ai-in-container:main`
+- `ghcr.io/cainiaocome/ai-in-container:dev`
+- `ghcr.io/cainiaocome/ai-in-container:{branch}`
