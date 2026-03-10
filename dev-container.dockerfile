@@ -62,11 +62,11 @@ RUN echo "testenv" > /.python-version
 COPY scripts/install-python.sh /usr/local/bin/install-python.sh
 RUN chmod +x /usr/local/bin/install-python.sh
 
-# Install Python 3.14.2 by default during image build
-RUN /usr/local/bin/install-python.sh 3.14.2
-
 USER ubuntu
 WORKDIR /home/ubuntu
+
+# Install Python 3.14.2 by default during image build
+RUN /usr/local/bin/install-python.sh 3.14.2
 
 # persist env for interactive shells
 # not necessary though, we have defined environment variable globally at head already
