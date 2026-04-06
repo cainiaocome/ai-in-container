@@ -61,11 +61,11 @@ agent_here_build_docker_args() {
 
 agent_here_run() {
   local -a command=("$@")
-  local bash_command='if [ -f "$HOME/.bashrc" ]; then source "$HOME/.bashrc"; fi; exec "$@"'
+  local bash_command='exec "$@"'
 
   agent_here_remove_existing_container
   agent_here_build_docker_args
 
   docker run "${AGENT_HERE_DOCKER_ARGS[@]}" "${AGENT_HERE_IMAGE}" \
-    bash -lc "${bash_command}" bash "${command[@]}"
+    bash -lic "${bash_command}" bash "${command[@]}"
 }

@@ -26,7 +26,7 @@ Each launcher will:
 - mount your current directory to `/app/{folder-name}` in the container
 - persist agent state in `~/.homes_for_containers/copilot`
 - reuse the same container image, with an optional `--dev` tag switch
-- run the agent command through `bash` so env from the mapped `~/.bashrc` is available
+- run the agent command through interactive `bash` so env from the mapped `~/.bashrc` is available
 - start the selected coding agent with permissive flags enabled
 
 ## Launcher Behavior
