@@ -1,5 +1,5 @@
 #!/usr/bin/env zsh
 
-docker pull ghcr.io/cainiaocome/ai-in-container:dev
+docker pull --platform linux/amd64 ghcr.io/cainiaocome/ai-in-container:dev
 
-docker pull ghcr.io/cainiaocome/ai-in-container:main
+docker pull --platform linux/amd64 ghcr.io/cainiaocome/ai-in-container:main
