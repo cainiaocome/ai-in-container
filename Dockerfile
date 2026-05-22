@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   build-essential curl git ca-certificates pkg-config libssl-dev zlib1g-dev libbz2-dev \
   libreadline-dev libsqlite3-dev libncursesw5-dev libgdbm-dev libnss3-dev liblzma-dev \
   libffi-dev tk-dev libncurses-dev wget xz-utils procps \
-  iputils-ping, dnsutils, traceroute, iproute2, tcpdump, htop, lsof, strace
+  iputils-ping dnsutils traceroute iproute2 tcpdump htop lsof strace
 
 # git needs openssh-client
 RUN apt-get install -y openssh-client
