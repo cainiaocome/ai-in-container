@@ -51,6 +51,7 @@ RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shell
   brew install docker docker-compose && \
   brew install awscli && \
   brew install openjdk@17 maven gradle && \
+  brew tap hashicorp/tap && brew install hashicorp/tap/terraform && \
   brew install go node'"
 
 # install TypeScript globally
