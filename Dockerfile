@@ -24,6 +24,12 @@ RUN apt-get install -y sudo wget git curl \
   iproute2 net-tools lsof htop unzip zip gnupg man-db tree jq \
   rsync postgresql-client
 
+# terraform
+RUN wget -O- https://apt.releases.hashicorp.com/gpg | \
+  gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg && \
+  echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(. /etc/os-release && echo "$VERSION_CODENAME") main" > /etc/apt/sources.list.d/hashicorp.list && \
+  apt-get update && apt-get install -y terraform
+
 # chromium dependencies for playwright
 RUN apt-get install -y python3 python3-pip python3-venv
 RUN python3 -m venv /tmp/playwright-venv && \
@@ -51,7 +57,6 @@ RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shell
   brew install docker docker-compose && \
   brew install awscli && \
   brew install openjdk@17 maven gradle && \
-  brew tap hashicorp/tap && brew install hashicorp/tap/terraform && \
   brew install kubernetes-cli && \
   brew install go node'"
 
