@@ -22,7 +22,8 @@ RUN apt-get install -y openssh-client
 RUN apt-get install -y sudo wget git curl \
   vim less nano bash-completion zsh locales tzdata \
   iproute2 net-tools lsof htop unzip zip gnupg man-db tree jq \
-  rsync postgresql-client
+  rsync postgresql-client \
+  ansible incus-client
 
 # terraform
 RUN wget -O- https://apt.releases.hashicorp.com/gpg | \
