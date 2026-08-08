@@ -3,7 +3,6 @@ set -euo pipefail
 
 readonly AGENT_HERE_IMAGE_REPO="ghcr.io/cainiaocome/ai-in-container"
 readonly AGENT_HERE_HOME_DIR_IN_CONTAINER="/home/ubuntu"
-readonly DOCKER_HOST="ssh://root@pve3test"
 
 agent_here_init() {
   AGENT_HERE_SCRIPT_NAME="$(basename -- "$0")"
@@ -49,14 +48,6 @@ agent_here_build_docker_args() {
     -v "${PWD}:${AGENT_HERE_WORKDIR}"
     -w "${AGENT_HERE_WORKDIR}"
   )
-
-  if [ -n "${GH_TOKEN:-}" ]; then
-    AGENT_HERE_DOCKER_ARGS+=(-e GH_TOKEN)
-  fi
-
-  if [ -n "${DOCKER_HOST:-}" ]; then
-    AGENT_HERE_DOCKER_ARGS+=(-e DOCKER_HOST)
-  fi
 }
 
 agent_here_run() {
