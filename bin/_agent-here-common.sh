@@ -38,14 +38,22 @@ agent_here_remove_existing_container() {
 }
 
 agent_here_build_docker_args() {
+  local kvm_gid
+  local vsock_gid
+
   mkdir -p "${AGENT_HERE_HOME_DIR_ON_HOST}"
+  kvm_gid="$(stat -c '%g' /dev/kvm)"
+  vsock_gid="$(stat -c '%g' /dev/vhost-vsock)"
 
   AGENT_HERE_DOCKER_ARGS=(
     --rm
     -it
     --name "${AGENT_HERE_CONTAINER_NAME}"
     --device=/dev/kvm
+    --device=/dev/vhost-vsock
     --device=/dev/net/tun
+    --group-add="${kvm_gid}"
+    --group-add="${vsock_gid}"
     --cap-add=NET_ADMIN
     -v "${AGENT_HERE_HOME_DIR_ON_HOST}:${AGENT_HERE_HOME_DIR_IN_CONTAINER}"
     -v "${PWD}:${AGENT_HERE_WORKDIR}"

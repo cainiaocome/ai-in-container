@@ -27,7 +27,7 @@ Each launcher will:
 - persist agent state in `~/.homes_for_containers/copilot`
 - reuse the same container image, with an optional `--dev` tag switch
 - run the agent command through interactive `bash` so env from the mapped `~/.bashrc` is available
-- expose KVM and TUN devices and grant `NET_ADMIN` for VM networking
+- expose KVM, vhost-vsock, and TUN devices, add their device groups, and grant `NET_ADMIN` for VM networking
 - start the selected coding agent with permissive flags enabled
 
 ## Launcher Behavior
@@ -41,8 +41,8 @@ By default the launchers resume the last session when the agent supports it. Pas
 
 ## Prerequisites
 
-- Docker installed and running
-- `/dev/kvm` and `/dev/net/tun` available on the Docker daemon host
+- Docker installed and running locally
+- `/dev/kvm`, `/dev/vhost-vsock`, and `/dev/net/tun` available on the local Docker daemon host
 - Authentication for the agent you want to use, either through environment variables such as `GH_TOKEN`, `OPENAI_API_KEY`, and `ANTHROPIC_API_KEY`, or via the persisted home directory
 
 ## Building Locally
