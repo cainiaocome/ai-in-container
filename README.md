@@ -9,7 +9,7 @@ A Docker image based on Ubuntu 24.04 with the major terminal-first coding agents
 - **pyenv** for Python version management
 - **Python 3.14.2** with performance optimizations
 - **AI agents**: GitHub Copilot CLI, Codex CLI, Claude Code
-- **Modern CLI tools**: ripgrep, bat, fd, fzf, uv, jq, tree
+- **Modern CLI tools**: ripgrep, bat, fd, fzf, uv, jq, tree, ShellCheck
 
 ## Quick Start
 
