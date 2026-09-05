@@ -5,6 +5,7 @@ A Docker image based on Ubuntu 24.04 with the major terminal-first coding agents
 ## Features
 
 - **Ubuntu 24.04** base image
+- **Timezone**: America/St_Johns (NST/NDT)
 - **Homebrew** package manager
 - **pyenv** for Python version management
 - **Python 3.14.2** with performance optimizations

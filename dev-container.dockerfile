@@ -1,6 +1,7 @@
 FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
+  TZ=America/St_Johns \
   HOME=/home/ubuntu \
   PYENV_ROOT=/home/ubuntu/.pyenv \
   PATH=/home/ubuntu/.pyenv/bin:/home/ubuntu/.pyenv/shims:/home/linuxbrew/.linuxbrew/bin:$PATH \
@@ -22,6 +23,9 @@ RUN apt-get install -y sudo wget git curl \
   vim less nano bash-completion zsh locales tzdata \
   iproute2 net-tools lsof htop unzip zip gnupg man-db tree jq \
   rsync postgresql-client
+
+RUN ln -snf "/usr/share/zoneinfo/${TZ}" /etc/localtime && \
+  echo "${TZ}" > /etc/timezone
 
 # chromium dependencies for playwright
 RUN apt-get install -y python3 python3-pip python3-venv

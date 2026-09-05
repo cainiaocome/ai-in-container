@@ -1,6 +1,7 @@
 FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
+  TZ=America/St_Johns \
   HOME=/home/ubuntu \
   PYENV_ROOT=/home/ubuntu/.pyenv \
   PATH=/home/ubuntu/.pyenv/bin:/home/ubuntu/.pyenv/shims:/home/linuxbrew/.linuxbrew/bin:$PATH \
@@ -24,6 +25,9 @@ RUN apt-get install -y sudo wget git curl \
   iproute2 net-tools lsof htop unzip zip gnupg man-db tree jq \
   rsync postgresql-client shellcheck \
   ansible incus-client
+
+RUN ln -snf "/usr/share/zoneinfo/${TZ}" /etc/localtime && \
+  echo "${TZ}" > /etc/timezone
 
 # terraform
 RUN wget -O- https://apt.releases.hashicorp.com/gpg | \
