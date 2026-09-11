@@ -17,8 +17,6 @@ A Docker image based on Ubuntu 24.04 with the major terminal-first coding agents
 Use any launcher from `bin/`:
 
 ```bash
-./bin/ai-here
-./bin/copilot-here
 ./bin/codex-here
 ./bin/claude-here
 ```
@@ -33,8 +31,6 @@ Each launcher will:
 
 ## Launcher Behavior
 
-- `ai-here` launches GitHub Copilot CLI
-- `copilot-here` is a symlink to `ai-here`
 - `codex-here` launches Codex CLI with `--yolo --search`
 - `claude-here` launches Claude Code with `--dangerously-skip-permissions --chrome`
 
