@@ -3,6 +3,7 @@ FROM ubuntu:24.04
 ENV DEBIAN_FRONTEND=noninteractive \
   TZ=America/St_Johns \
   HOME=/home/ubuntu \
+  NPM_CONFIG_MIN_RELEASE_AGE=7 \
   PYENV_ROOT=/home/ubuntu/.pyenv \
   PATH=/home/ubuntu/.pyenv/bin:/home/ubuntu/.pyenv/shims:/home/linuxbrew/.linuxbrew/bin:$PATH \
   PYTHON_CONFIGURE_OPTS="--enable-optimizations --with-lto" \
