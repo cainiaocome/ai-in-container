@@ -1,6 +1,6 @@
 # AI in Container
 
-A Docker image based on Ubuntu 24.04 with the major terminal-first coding agents preinstalled, including GitHub Copilot CLI, Codex CLI, and Claude Code.
+A Docker image based on Ubuntu 24.04 with the major terminal-first coding agents preinstalled, including GitHub Copilot CLI, Codex CLI, Claude Code, and Pi Coding Agent.
 
 ## Features
 
@@ -9,7 +9,7 @@ A Docker image based on Ubuntu 24.04 with the major terminal-first coding agents
 - **Homebrew** package manager
 - **pyenv** for Python version management
 - **Python 3.14.2** with performance optimizations
-- **AI agents**: GitHub Copilot CLI, Codex CLI, Claude Code
+- **AI agents**: GitHub Copilot CLI, Codex CLI, Claude Code, Pi Coding Agent
 - **Modern CLI tools**: ripgrep, bat, fd, fzf, uv, jq, tree, ShellCheck
 
 ## Quick Start
@@ -19,6 +19,7 @@ Use any launcher from `bin/`:
 ```bash
 ./bin/codex-here
 ./bin/claude-here
+./bin/pi-here
 ```
 
 Each launcher will:
@@ -27,14 +28,15 @@ Each launcher will:
 - reuse the same container image, with an optional `--dev` tag switch
 - run the agent command through interactive `bash` so env from the mapped `~/.bashrc` is available
 - expose KVM, vhost-vsock, and TUN devices, add their device groups, and grant `NET_ADMIN` for VM networking
-- start the selected coding agent with permissive flags enabled
+- start the selected coding agent with the launcher's configured flags
 
 ## Launcher Behavior
 
 - `codex-here` launches Codex CLI with `--yolo --search`
 - `claude-here` launches Claude Code with `--dangerously-skip-permissions --chrome`
+- `pi-here` launches Pi Coding Agent and resumes the latest session for the current project by default
 
-By default the launchers resume the last session when the agent supports it. Pass `-n` or `--new` to start a fresh session instead. Pass `--dev` to use `ghcr.io/cainiaocome/ai-in-container:dev`.
+By default the launchers resume the last session when the agent supports it. Pass `-n` or `--new` to start a fresh session instead. For `pi-here`, `-n` is intentionally reserved for starting a new session; rename a Pi session from inside Pi with `/name`. Pass `--dev` to use `ghcr.io/cainiaocome/ai-in-container:dev`.
 
 ## Prerequisites
 
