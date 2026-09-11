@@ -21,11 +21,11 @@ jobs:
         id: vars
         env:
           BRANCH: ${{ github.ref_name }}
-          SHA: ${{ github.sha }}
           IMAGE: ghcr.io/${{ github.repository_owner }}/dev-container
         run: |
-          tags="$IMAGE:$BRANCH"
-          echo "tags=$tags" >> $GITHUB_OUTPUT
+          safe_branch="${BRANCH//\//-}"
+          tags="$IMAGE:$safe_branch"
+          echo "tags=$tags" >> "$GITHUB_OUTPUT"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
