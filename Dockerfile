@@ -66,9 +66,10 @@ RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shell
   brew install kubernetes-cli && \
   brew install go node'"
 
-# install TypeScript globally
+# install global npm tools
 RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\" && \
-  npm install -g typescript'"
+  npm install -g typescript && \
+  npm install -g --ignore-scripts @earendil-works/pi-coding-agent'"
 
 # default pyenv
 RUN echo "testenv" > /.python-version
