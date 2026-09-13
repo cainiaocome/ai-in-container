@@ -5,6 +5,7 @@ A Docker image based on Ubuntu 24.04 with the major terminal-first coding agents
 ## Features
 
 - **Ubuntu 24.04** base image
+- **Architectures**: linux/amd64 and linux/arm64
 - **Timezone**: America/St_Johns (NST/NDT)
 - **Homebrew** package manager
 - **pyenv** for Python version management
@@ -30,6 +31,8 @@ Each launcher will:
 - expose KVM, vhost-vsock, and TUN devices, add their device groups, and grant `NET_ADMIN` for VM networking
 - start the selected coding agent with the launcher's configured flags
 
+Docker automatically selects the matching AMD64 or ARM64 image for the host architecture.
+
 ## Launcher Behavior
 
 - `codex-here` launches Codex CLI with `--yolo --search`
@@ -52,5 +55,9 @@ docker build -t ai-in-container .
 
 ## Image Tags
 
+The normal tags are multi-platform manifests containing both `linux/amd64` and `linux/arm64` images:
+
 - `ghcr.io/cainiaocome/ai-in-container:main`
 - `ghcr.io/cainiaocome/ai-in-container:{branch}`
+
+Architecture-specific tags are also published as `{tag}-amd64` and `{tag}-arm64`.

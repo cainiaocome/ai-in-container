@@ -10,22 +10,37 @@ permissions:
   contents: read
   packages: write
 
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
-    runs-on: ubuntu-24.04-arm
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            platform: linux/amd64
+            arch: amd64
+          - runner: ubuntu-24.04-arm
+            platform: linux/arm64
+            arch: arm64
+
+    runs-on: ${{ matrix.runner }}
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set image tags
+      - name: Set image tag
         id: vars
         env:
           BRANCH: ${{ github.ref_name }}
           IMAGE: ghcr.io/${{ github.repository }}
+          ARCH: ${{ matrix.arch }}
         run: |
           safe_branch="${BRANCH//\//-}"
-          tags="$IMAGE:$safe_branch"
-          echo "tags=$tags" >> "$GITHUB_OUTPUT"
+          echo "tag=$IMAGE:$safe_branch-$ARCH" >> "$GITHUB_OUTPUT"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -41,6 +56,42 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          platforms: linux/arm64
+          platforms: ${{ matrix.platform }}
           push: true
-          tags: ${{ steps.vars.outputs.tags }}
+          tags: ${{ steps.vars.outputs.tag }}
+
+  manifest:
+    needs: build
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Set image tags
+        id: vars
+        env:
+          BRANCH: ${{ github.ref_name }}
+          IMAGE: ghcr.io/${{ github.repository }}
+        run: |
+          safe_branch="${BRANCH//\//-}"
+          echo "manifest=$IMAGE:$safe_branch" >> "$GITHUB_OUTPUT"
+          echo "amd64=$IMAGE:$safe_branch-amd64" >> "$GITHUB_OUTPUT"
+          echo "arm64=$IMAGE:$safe_branch-arm64" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create multi-platform manifest
+        run: |
+          docker buildx imagetools create \
+            --tag "${{ steps.vars.outputs.manifest }}" \
+            "${{ steps.vars.outputs.amd64 }}" \
+            "${{ steps.vars.outputs.arm64 }}"
+
+      - name: Inspect multi-platform image
+        run: docker buildx imagetools inspect "${{ steps.vars.outputs.manifest }}"
