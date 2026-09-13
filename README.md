@@ -25,7 +25,7 @@ Use any launcher from `bin/`:
 Each launcher will:
 - mount your current directory to `/app/{folder-name}` in the container
 - persist agent state in `~/.homes_for_containers/copilot`
-- reuse the same container image, with an optional `--dev` tag switch
+- reuse the same `ghcr.io/cainiaocome/ai-in-container:main` image
 - run the agent command through interactive `bash` so env from the mapped `~/.bashrc` is available
 - expose KVM, vhost-vsock, and TUN devices, add their device groups, and grant `NET_ADMIN` for VM networking
 - start the selected coding agent with the launcher's configured flags
@@ -36,7 +36,7 @@ Each launcher will:
 - `claude-here` launches Claude Code with `--dangerously-skip-permissions --chrome`
 - `pi-here` launches Pi Coding Agent and resumes the latest session for the current project by default
 
-By default the launchers resume the last session when the agent supports it. Pass `-n` or `--new` to start a fresh session instead. For `pi-here`, `-n` is intentionally reserved for starting a new session; rename a Pi session from inside Pi with `/name`. Pass `--dev` to use `ghcr.io/cainiaocome/ai-in-container:dev`.
+By default the launchers resume the last session when the agent supports it. Pass `-n` or `--new` to start a fresh session instead. For `pi-here`, `-n` is intentionally reserved for starting a new session; rename a Pi session from inside Pi with `/name`.
 
 ## Prerequisites
 
@@ -53,5 +53,4 @@ docker build -t ai-in-container .
 ## Image Tags
 
 - `ghcr.io/cainiaocome/ai-in-container:main`
-- `ghcr.io/cainiaocome/ai-in-container:dev`
 - `ghcr.io/cainiaocome/ai-in-container:{branch}`

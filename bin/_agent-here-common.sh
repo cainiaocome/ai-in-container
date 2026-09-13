@@ -1,22 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-readonly AGENT_HERE_IMAGE_REPO="ghcr.io/cainiaocome/ai-in-container"
+readonly AGENT_HERE_IMAGE="ghcr.io/cainiaocome/ai-in-container:main"
 readonly AGENT_HERE_HOME_DIR_IN_CONTAINER="/home/ubuntu"
 
 agent_here_init() {
   AGENT_HERE_SCRIPT_NAME="$(basename -- "$0")"
   AGENT_HERE_CONTAINER_NAME="${AGENT_HERE_CONTAINER_NAME:-$AGENT_HERE_SCRIPT_NAME}"
   AGENT_HERE_HOME_DIR_ON_HOST="${AGENT_HERE_HOME_DIR_ON_HOST:-$HOME/.homes_for_containers/copilot}"
-  AGENT_HERE_IMAGE_TAG="main"
   AGENT_HERE_NEW_SESSION=0
   AGENT_HERE_ARGS=()
 
   for arg in "$@"; do
     case "$arg" in
-    --dev)
-      AGENT_HERE_IMAGE_TAG="dev"
-      ;;
     -n | --new)
       AGENT_HERE_NEW_SESSION=1
       ;;
@@ -26,7 +22,6 @@ agent_here_init() {
     esac
   done
 
-  AGENT_HERE_IMAGE="${AGENT_HERE_IMAGE_REPO}:${AGENT_HERE_IMAGE_TAG}"
   AGENT_HERE_SUBFOLDER_NAME="$(basename -- "$PWD")"
   AGENT_HERE_WORKDIR="/app/${AGENT_HERE_SUBFOLDER_NAME}"
 }
