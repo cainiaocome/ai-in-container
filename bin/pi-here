@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd -- "$(dirname -- "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd -P)"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 # shellcheck source=bin/_agent-here-common.sh
 source "${SCRIPT_DIR}/_agent-here-common.sh"
 
-agent_here_init "$@"
+agent_here_init pi "$@"
 
-if [ "${AGENT_HERE_NEW_SESSION}" -eq 0 ]; then
-  pi_command=(pi -c)
+if [ "$AGENT_HERE_NEW_SESSION" -eq 0 ]; then
+  pi_args=(-c)
 else
-  pi_command=(pi)
+  pi_args=()
 fi
-pi_command+=("${AGENT_HERE_ARGS[@]}")
+pi_args+=("${AGENT_HERE_ARGS[@]}")
 
-agent_here_run "${pi_command[@]}"
+agent_here_run "${pi_args[@]}"
