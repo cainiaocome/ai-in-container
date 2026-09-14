@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-readonly AGENT_HERE_IMAGE="ghcr.io/cainiaocome/ai-in-container:main"
-readonly AGENT_HERE_HOME_DIR_IN_CONTAINER="/home/ubuntu"
+readonly AGENT_HERE_IMAGE_DEFAULT="ghcr.io/cainiaocome/ai-in-container:docker-sandbox"
 
 agent_here_init() {
+  local agent="$1"
+  shift
+
+  AGENT_HERE_AGENT="${agent}"
   AGENT_HERE_SCRIPT_NAME="$(basename -- "$0")"
-  AGENT_HERE_CONTAINER_NAME="${AGENT_HERE_CONTAINER_NAME:-$AGENT_HERE_SCRIPT_NAME}"
-  AGENT_HERE_HOME_DIR_ON_HOST="${AGENT_HERE_HOME_DIR_ON_HOST:-$HOME/.homes_for_containers/copilot}"
   AGENT_HERE_NEW_SESSION=0
   AGENT_HERE_ARGS=()
 
@@ -22,47 +23,43 @@ agent_here_init() {
     esac
   done
 
-  AGENT_HERE_SUBFOLDER_NAME="$(basename -- "$PWD")"
-  AGENT_HERE_WORKDIR="/app/${AGENT_HERE_SUBFOLDER_NAME}"
+  AGENT_HERE_PROJECT_DIR="$(pwd -P)"
+  AGENT_HERE_PROJECT_NAME="$(basename -- "$AGENT_HERE_PROJECT_DIR")"
+  AGENT_HERE_REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
+  AGENT_HERE_KIT_DIR="${AGENT_HERE_REPO_ROOT}/sandbox/kits/${AGENT_HERE_AGENT}"
+  AGENT_HERE_IMAGE="${AGENT_HERE_IMAGE:-$AGENT_HERE_IMAGE_DEFAULT}"
+
+  local project_slug project_id default_name
+  project_slug="$(printf '%s' "$AGENT_HERE_PROJECT_NAME" \
+    | tr '[:upper:]' '[:lower:]' \
+    | tr -cs 'a-z0-9' '-' \
+    | sed 's/^-//; s/-$//' \
+    | cut -c1-24)"
+  [ -n "$project_slug" ] || project_slug="project"
+  project_id="$(printf '%s' "$AGENT_HERE_PROJECT_DIR" | cksum | awk '{print $1}')"
+  default_name="aiic-${AGENT_HERE_AGENT}-${project_slug}-${project_id}"
+  AGENT_HERE_SANDBOX_NAME="${AGENT_HERE_SANDBOX_NAME:-$default_name}"
 }
 
-agent_here_remove_existing_container() {
-  if [ -n "$(docker ps -aq -f name=^/${AGENT_HERE_CONTAINER_NAME}$)" ]; then
-    docker rm -f "${AGENT_HERE_CONTAINER_NAME}" >/dev/null
+agent_here_require_sbx() {
+  if ! command -v sbx >/dev/null 2>&1; then
+    cat >&2 <<'MSG'
+Docker Sandboxes CLI (sbx) is required.
+Install it from https://docs.docker.com/ai/sandboxes/install/ and run `sbx login` once.
+MSG
+    return 127
   fi
-}
-
-agent_here_build_docker_args() {
-  local kvm_gid
-  local vsock_gid
-
-  mkdir -p "${AGENT_HERE_HOME_DIR_ON_HOST}"
-  kvm_gid="$(stat -c '%g' /dev/kvm)"
-  vsock_gid="$(stat -c '%g' /dev/vhost-vsock)"
-
-  AGENT_HERE_DOCKER_ARGS=(
-    --rm
-    -it
-    --name "${AGENT_HERE_CONTAINER_NAME}"
-    --device=/dev/kvm
-    --device=/dev/vhost-vsock
-    --device=/dev/net/tun
-    --group-add="${kvm_gid}"
-    --group-add="${vsock_gid}"
-    --cap-add=NET_ADMIN
-    -v "${AGENT_HERE_HOME_DIR_ON_HOST}:${AGENT_HERE_HOME_DIR_IN_CONTAINER}"
-    -v "${PWD}:${AGENT_HERE_WORKDIR}"
-    -w "${AGENT_HERE_WORKDIR}"
-  )
 }
 
 agent_here_run() {
   local -a command=("$@")
-  local bash_command='exec "$@"'
 
-  agent_here_remove_existing_container
-  agent_here_build_docker_args
+  agent_here_require_sbx
 
-  docker run "${AGENT_HERE_DOCKER_ARGS[@]}" "${AGENT_HERE_IMAGE}" \
-    bash -lic "${bash_command}" bash "${command[@]}"
+  sbx run \
+    --name "$AGENT_HERE_SANDBOX_NAME" \
+    --kit-arg "image=$AGENT_HERE_IMAGE" \
+    "$AGENT_HERE_KIT_DIR" \
+    "$AGENT_HERE_PROJECT_DIR" \
+    -- "${command[@]}"
 }
