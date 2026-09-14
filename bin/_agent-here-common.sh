@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2034 # State variables are consumed by the launcher that sources this file.
 set -euo pipefail
 
 readonly AGENT_HERE_IMAGE_DEFAULT="ghcr.io/cainiaocome/ai-in-container:docker-sandbox"
@@ -8,7 +9,6 @@ agent_here_init() {
   shift
 
   AGENT_HERE_AGENT="${agent}"
-  AGENT_HERE_SCRIPT_NAME="$(basename -- "$0")"
   AGENT_HERE_NEW_SESSION=0
   AGENT_HERE_ARGS=()
 
