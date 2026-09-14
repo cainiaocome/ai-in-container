@@ -1,0 +1,17 @@
+schemaVersion: "2"
+kind: sandbox
+name: ai-in-container-claude
+displayName: AI in Container - Claude Code
+description: Self-managed Claude Code running in the ai-in-container Docker Sandbox image.
+
+args:
+  image:
+    default: ghcr.io/cainiaocome/ai-in-container:docker-sandbox
+    description: OCI image containing the self-installed coding agents.
+
+sandbox:
+  image: "${{ kit.args.image }}"
+  entrypoint: [claude]
+
+agentInstructions:
+  filename: CLAUDE.md
