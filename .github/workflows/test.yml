@@ -1,0 +1,26 @@
+name: Test
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ShellCheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: ShellCheck
+        run: shellcheck bin/* scripts/*.sh tests/*.sh
+      - name: Unit tests
+        run: make test
+
+  # The real sbx smoke test is intentionally not run on GitHub-hosted runners.
+  # Docker Sandboxes requires KVM (nested virtualization when already in a VM),
+  # an sbx login, and access to the template image. Run `make test-sandbox` on a
+  # compatible Linux/macOS host or add a dedicated KVM-enabled self-hosted job.
