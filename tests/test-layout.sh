@@ -39,4 +39,16 @@ if grep -R -E 'docker[[:space:]]+(run|rm|ps)' bin/ >/dev/null; then
   fail "launchers still invoke Docker container lifecycle commands"
 fi
 
+# Preserve the original launcher identity model: one runtime per agent, not one
+# runtime per agent/project pair. Project path hashes must not participate in the
+# sandbox name, and execution must switch workdirs inside the stable VM.
+if grep -E 'project_slug|project_id|cksum' bin/_agent-here-common.sh >/dev/null; then
+  fail "sandbox identity must not depend on the current project"
+fi
+grep -F 'AGENT_HERE_SANDBOX_NAME="${AGENT_HERE_SANDBOX_NAME:-${AGENT_HERE_AGENT}-here}"' \
+  bin/_agent-here-common.sh >/dev/null || fail "stable per-agent sandbox name missing"
+grep -F 'sbx exec -it' bin/_agent-here-common.sh >/dev/null || fail "agent must run through sbx exec"
+grep -F -- '--workdir "$AGENT_HERE_PROJECT_DIR"' bin/_agent-here-common.sh >/dev/null \
+  || fail "launcher must enter the current project with sbx exec --workdir"
+
 echo "layout tests: PASS"
