@@ -86,7 +86,9 @@ MSG
 }
 
 agent_here_sandbox_exists() {
-  sbx ls -q | grep -Fxq -- "$AGENT_HERE_SANDBOX_NAME"
+  local sandboxes
+  sandboxes="$(sbx ls -q)"
+  grep -Fxq -- "$AGENT_HERE_SANDBOX_NAME" <<<"$sandboxes"
 }
 
 agent_here_create_sandbox() {
