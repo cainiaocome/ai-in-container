@@ -1,90 +1,84 @@
-FROM ubuntu:24.04
+FROM docker.io/docker/sandbox-templates:shell-docker
+
+ARG CODEX_VERSION=latest
+ARG CLAUDE_CODE_VERSION=latest
+ARG PI_VERSION=latest
 
 ENV DEBIAN_FRONTEND=noninteractive \
-  TZ=America/St_Johns \
-  HOME=/home/ubuntu \
-  NPM_CONFIG_MIN_RELEASE_AGE=7 \
-  PYENV_ROOT=/home/ubuntu/.pyenv \
-  PATH=/home/ubuntu/.pyenv/bin:/home/ubuntu/.pyenv/shims:/home/linuxbrew/.linuxbrew/bin:$PATH \
-  PYTHON_CONFIGURE_OPTS="--enable-optimizations --with-lto" \
-  CFLAGS="-O3 -march=native -fomit-frame-pointer -funroll-loops -pipe" \
-  LDFLAGS="-Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now"
+    TZ=America/St_Johns \
+    HOME=/home/agent \
+    NPM_CONFIG_MIN_RELEASE_AGE=7 \
+    PYENV_ROOT=/home/agent/.pyenv \
+    PATH=/home/agent/.pyenv/bin:/home/agent/.pyenv/shims:/usr/local/bin:$PATH \
+    PYTHON_CONFIGURE_OPTS="--enable-optimizations --with-lto" \
+    CFLAGS="-O3 -fomit-frame-pointer -funroll-loops -pipe" \
+    LDFLAGS="-Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now"
 
-# python dependencies
+USER root
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
-  build-essential curl git ca-certificates pkg-config libssl-dev zlib1g-dev libbz2-dev \
-  libreadline-dev libsqlite3-dev libncursesw5-dev libgdbm-dev libnss3-dev liblzma-dev \
-  libffi-dev tk-dev libncurses-dev wget xz-utils procps git-crypt \
-  iputils-ping dnsutils traceroute iproute2 tcpdump htop lsof strace 
+    ansible bash-completion build-essential ca-certificates curl dnsutils git git-crypt \
+    gnupg gradle htop incus-client iproute2 iputils-ping less libbz2-dev libffi-dev \
+    libgdbm-dev liblzma-dev libncurses-dev libncursesw5-dev libnss3-dev libreadline-dev \
+    libsqlite3-dev libssl-dev lsof man-db maven nano net-tools openjdk-17-jdk \
+    openssh-client pkg-config postgresql-client procps python3 python3-pip python3-venv \
+    rclone rsync shellcheck strace sudo tcpdump tk-dev traceroute tree unzip vim wget \
+    xz-utils zip zlib1g-dev zsh \
+    && rm -rf /var/lib/apt/lists/*
 
-# git needs openssh-client
-RUN apt-get install -y openssh-client
+RUN ln -snf "/usr/share/zoneinfo/${TZ}" /etc/localtime \
+    && echo "${TZ}" > /etc/timezone
 
-# common tools
-RUN apt-get install -y sudo wget git curl \
-  vim less nano bash-completion zsh locales tzdata \
-  iproute2 net-tools lsof htop unzip zip gnupg man-db tree jq \
-  rsync postgresql-client shellcheck \
-  ansible incus-client
+# Terraform
+RUN install -m 0755 -d /etc/apt/keyrings \
+    && curl -fsSL https://apt.releases.hashicorp.com/gpg \
+      | gpg --dearmor -o /etc/apt/keyrings/hashicorp.gpg \
+    && chmod a+r /etc/apt/keyrings/hashicorp.gpg \
+    && echo "deb [signed-by=/etc/apt/keyrings/hashicorp.gpg] https://apt.releases.hashicorp.com $(. /etc/os-release && echo \"$VERSION_CODENAME\") main" \
+      > /etc/apt/sources.list.d/hashicorp.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends terraform \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN ln -snf "/usr/share/zoneinfo/${TZ}" /etc/localtime && \
-  echo "${TZ}" > /etc/timezone
+# GitHub CLI
+RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+      -o /usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+      > /etc/apt/sources.list.d/github-cli.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends gh \
+    && rm -rf /var/lib/apt/lists/*
 
-# terraform
-RUN wget -O- https://apt.releases.hashicorp.com/gpg | \
-  gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg && \
-  echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(. /etc/os-release && echo "$VERSION_CODENAME") main" > /etc/apt/sources.list.d/hashicorp.list && \
-  apt-get update && apt-get install -y terraform
+# Node 24 keeps Pi above its Node >=22.19 requirement and is also used to install
+# every coding agent ourselves. The generic shell-docker base contains no agent.
+RUN curl -fsSL https://deb.nodesource.com/setup_24.x -o /tmp/nodesource.sh \
+    && bash /tmp/nodesource.sh \
+    && rm /tmp/nodesource.sh \
+    && apt-get install -y --no-install-recommends nodejs \
+    && npm install -g \
+      "@openai/codex@${CODEX_VERSION}" \
+      "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}" \
+      typescript \
+    && npm install -g --ignore-scripts "@earendil-works/pi-coding-agent@${PI_VERSION}" \
+    && npm cache clean --force \
+    && rm -rf /var/lib/apt/lists/*
 
-# chromium dependencies for playwright
-RUN apt-get install -y python3 python3-pip python3-venv
-RUN python3 -m venv /tmp/playwright-venv && \
-  /tmp/playwright-venv/bin/pip install playwright && \
-  /tmp/playwright-venv/bin/playwright install-deps chromium && \
-  rm -rf /tmp/playwright-venv
+# pyenv stays user-scoped so install-python.sh can add arbitrary CPython versions
+# without modifying the sandbox base image.
+USER agent
+RUN curl -fsSL https://pyenv.run -o /tmp/pyenv-installer \
+    && bash /tmp/pyenv-installer \
+    && rm /tmp/pyenv-installer
 
-# create a non-root user to install Homebrew
-RUN chown -R ubuntu:ubuntu /home/ubuntu
+COPY --chown=agent:agent scripts/install-python.sh /usr/local/bin/install-python.sh
+USER root
+RUN chmod 0755 /usr/local/bin/install-python.sh \
+    && printf '%s\n' \
+      'export PYENV_ROOT="$HOME/.pyenv"' \
+      'export PATH="$PYENV_ROOT/bin:$PYENV_ROOT/shims:/usr/local/bin:$PATH"' \
+      'command -v pyenv >/dev/null && eval "$(pyenv init -)"' \
+      >> /etc/sandbox-persistent.sh
 
-# install Homebrew (non-interactive) and pyenv via brew using ubuntu+sudown
-WORKDIR /root
-RUN echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/ubuntu && chmod 0440 /etc/sudoers.d/ubuntu
-
-# run installer as ubuntu (has sudo) non-interactively
-RUN su - ubuntu -c "NONINTERACTIVE=1 /bin/bash -lc 'curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | /bin/bash'"
-
-# ensure brew is available and install pyenv as ubuntu
-RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\" && \
-  brew install pyenv && \
-  brew install pyenv-virtualenv && \
-  brew install --cask copilot-cli codex claude-code && \
-  brew install ripgrep bat fd fzf uv rclone && \
-  brew install gh && \
-  brew install docker docker-compose && \
-  brew install awscli && \
-  brew install openjdk@17 maven gradle && \
-  brew install kubernetes-cli && \
-  brew install go node'"
-
-# install global npm tools
-RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\" && \
-  npm install -g typescript && \
-  npm install -g --ignore-scripts @earendil-works/pi-coding-agent'"
-
-# default pyenv
-RUN echo "testenv" > /.python-version
-
-# script will handle initializing pyenv and installing Python versions at runtime
-COPY scripts/install-python.sh /usr/local/bin/install-python.sh
-RUN chmod +x /usr/local/bin/install-python.sh
-
-USER ubuntu
-WORKDIR /home/ubuntu
-
-# persist env for interactive shells
-# not necessary though, we have defined environment variable globally at head already
-# the home folder is mounted as well
-RUN echo 'export PYENV_ROOT="/home/ubuntu/.pyenv"' >> /home/ubuntu/.profile && \
-  echo 'export PATH="$PYENV_ROOT/bin:$PYENV_ROOT/shims:/home/linuxbrew/.linuxbrew/bin:$PATH"' >> /home/ubuntu/.profile
-
-CMD ["bash"]
+USER agent
+WORKDIR /home/agent/workspace
