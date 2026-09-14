@@ -1,11 +1,20 @@
 # AI in Container — Docker Sandbox experiment
 
 This branch replaces the launcher runtime from a normal Docker container with
-[Docker Sandboxes](https://docs.docker.com/ai/sandboxes/). Each project/agent
-gets an isolated microVM with its own filesystem, Linux kernel, and Docker
-daemon, so coding agents can use `docker build`, `docker run`, and
-`docker compose` normally without Docker-in-Docker or access to the host Docker
-socket.
+[Docker Sandboxes](https://docs.docker.com/ai/sandboxes/). It preserves the
+original launcher identity model: **one runtime per agent**, independent of the
+project currently being worked on.
+
+The three stable sandboxes are therefore:
+
+```text
+codex-here
+claude-here
+pi-here
+```
+
+Each is a persistent microVM with its own filesystem, Linux kernel, Docker
+daemon, agent state, Docker images, and build cache.
 
 ## Important design choice
 
@@ -20,32 +29,88 @@ then installed by this repository itself:
 - `@anthropic-ai/claude-code`
 - `@earendil-works/pi-coding-agent`
 
-The three sandbox kits under `sandbox/kits/` only select which binary is the
-entrypoint. Agent versions therefore come from this repository's Docker build,
-not from Docker's agent-specific templates.
+The three sandbox kits under `sandbox/kits/` only describe the entrypoint and
+reference our image. Agent versions therefore come from this repository's
+Docker build, not from Docker's agent-specific templates.
 
 ## Architecture
 
 ```text
-host project directory
-        │
-        │ direct workspace mount
-        ▼
-Docker Sandbox microVM
-├── self-built ai-in-container template
-│   ├── Codex CLI
-│   ├── Claude Code
-│   ├── Pi Coding Agent
-│   └── development tools
-├── private dockerd
-│   ├── docker build
-│   ├── docker run
-│   └── docker compose
-└── persistent VM filesystem
+                         host workspace root
+                         /work/projects
+                              │
+                direct workspace passthrough
+                              │
+          ┌───────────────────┼───────────────────┐
+          │                   │                   │
+          ▼                   ▼                   ▼
+   codex-here VM       claude-here VM        pi-here VM
+   persistent HOME     persistent HOME       persistent HOME
+   private dockerd     private dockerd       private dockerd
+   Docker cache        Docker cache          Docker cache
+          │                   │                   │
+          └──── launcher selects current project with ────┘
+                       sbx exec --workdir "$PWD"
 ```
+
+A project does **not** get its own VM. Running Codex in ten projects still uses
+one `codex-here` VM.
 
 The agent can control Docker inside its own microVM. It does **not** receive the
 host's `/var/run/docker.sock`.
+
+## Why a workspace root is needed
+
+The old Docker implementation could recreate the same named container on every
+invocation and bind-mount only the current `$PWD`:
+
+```text
+codex-here container
+    + current project bind mount
+```
+
+Docker Sandboxes works differently: a sandbox's workspace mounts are fixed when
+the VM is created. An existing named VM cannot later replace its primary
+workspace with a different host directory.
+
+To keep one VM per agent, this branch mounts a stable **workspace root** once,
+then changes only the process working directory for each invocation:
+
+```text
+/work/projects              # mounted once when codex-here VM is created
+├── project-a
+├── project-b
+└── project-c
+
+cd project-a && codex-here  -> sbx exec -w /work/projects/project-a codex-here ...
+cd project-b && codex-here  -> sbx exec -w /work/projects/project-b codex-here ...
+```
+
+Set the root explicitly when you know where your repositories live:
+
+```bash
+export AGENT_HERE_WORKSPACE_ROOT="$HOME/src"
+```
+
+The launcher deliberately does **not** default to mounting all of `$HOME`,
+because that would unnecessarily expose SSH keys and unrelated files to the
+agent. If `AGENT_HERE_WORKSPACE_ROOT` is unset when a VM is first created, the
+launcher chooses:
+
+- the parent directory of the current Git repository; or
+- outside Git, the parent directory of the current working directory.
+
+That usually covers sibling project directories while keeping the mount much
+narrower than `$HOME`.
+
+Because Docker Sandbox workspace mounts are fixed at VM creation time, changing
+`AGENT_HERE_WORKSPACE_ROOT` for an already-created VM does not update it. Remove
+that agent VM once and recreate it:
+
+```bash
+sbx rm codex-here
+AGENT_HERE_WORKSPACE_ROOT="$HOME/src" ./bin/codex-here
+```
 
 ## Prerequisites
 
@@ -63,7 +128,7 @@ gh auth token | sbx secret set --registry ghcr.io --password-stdin
 
 ## Quick start
 
-From any project directory, run one of the launchers from this repository:
+From any project below the configured workspace root, run one of the launchers:
 
 ```bash
 /path/to/ai-in-container/bin/codex-here
@@ -86,18 +151,19 @@ Any remaining arguments are forwarded to the selected agent.
 
 ## Sandbox lifecycle and persistence
 
-The launcher derives a stable sandbox name from:
+The default sandbox identity depends only on the agent:
 
 ```text
-agent + project directory name + checksum of absolute project path
+Codex       -> codex-here
+Claude Code -> claude-here
+Pi          -> pi-here
 ```
 
-That means the same project and agent reconnect to the same sandbox on future
-runs. Installed packages, agent state, Docker images, Docker build cache, and
-other VM files persist across stop/start cycles.
+It does not include project names, path hashes, or Git repositories.
 
-The workspace itself is directly mounted from the host and remains the source
-of truth for project files.
+That means packages installed manually in a VM, agent login state, Docker
+images, Docker build cache, and other VM files are reused when the same agent
+moves between projects.
 
 List sandboxes:
 
@@ -108,19 +174,19 @@ sbx ls
 Stop one without deleting its state:
 
 ```bash
-sbx stop <sandbox-name>
+sbx stop codex-here
 ```
 
-Delete it completely when a clean VM is desired:
+Delete one completely when a clean VM is desired:
 
 ```bash
-sbx rm <sandbox-name>
+sbx rm codex-here
 ```
 
-Override the automatically generated name when needed:
+Override the fixed name when deliberately creating a separate VM:
 
 ```bash
-AGENT_HERE_SANDBOX_NAME=my-test-vm /path/to/bin/codex-here
+AGENT_HERE_SANDBOX_NAME=codex-experiment ./bin/codex-here
 ```
 
 ## Image selection
@@ -131,12 +197,16 @@ This branch defaults to:
 ghcr.io/cainiaocome/ai-in-container:docker-sandbox
 ```
 
-Override it without editing a kit:
+Override it when creating a new VM:
 
 ```bash
 AGENT_HERE_IMAGE=ghcr.io/example/ai-in-container:dev \
-  /path/to/bin/codex-here
+  AGENT_HERE_SANDBOX_NAME=codex-dev \
+  ./bin/codex-here
 ```
+
+An existing VM keeps the image/template it was created from. Remove and recreate
+it to switch that VM to a new image.
 
 All three kits use the same image. The image contains all agents.
 
@@ -167,7 +237,9 @@ Docker daemon. To test a locally built image without pushing it to a registry:
 
 ```bash
 make load-template IMAGE=my-ai-sandbox:dev
-AGENT_HERE_IMAGE=my-ai-sandbox:dev ./bin/codex-here
+AGENT_HERE_IMAGE=my-ai-sandbox:dev \
+  AGENT_HERE_SANDBOX_NAME=codex-local \
+  ./bin/codex-here
 ```
 
 ## Authentication
@@ -181,13 +253,8 @@ For subscription logins, authenticate from inside the agent as normal:
 - Claude Code: use `/login`
 - Pi: use `/login` and choose the provider
 
-The sandbox filesystem persists, so the login survives sandbox stop/start.
-Deleting the sandbox deletes credentials stored inside that VM.
-
-This differs from Docker's built-in agent kits, which can use Docker's
-host-side credential proxy. A future version can add explicit v2 kit credential
-declarations if host-side secret isolation is desired while still keeping the
-agent binaries self-installed.
+The VM filesystem persists, so login state survives stop/start and follows that
+agent between projects. Deleting the VM deletes credentials stored inside it.
 
 ## Docker inside the agent VM
 
@@ -201,7 +268,8 @@ docker build .
 docker compose up -d
 ```
 
-The in-VM Docker daemon is isolated from the host daemon.
+The in-VM Docker daemon is isolated from the host daemon, and its images/cache
+are shared by all projects handled by that one agent VM.
 
 ## Tests
 
@@ -214,7 +282,10 @@ make test
 They verify:
 
 - launcher argument forwarding and resume/new-session behavior
-- stable `sbx` invocation and custom image override
+- the sandbox identity is one fixed VM per agent, not per project
+- sibling projects reuse the same agent VM
+- `sbx exec --workdir` selects the current project
+- custom image/name overrides work at VM creation
 - all three kits point at the same self-built image
 - the Dockerfile uses only `shell-docker`, never Docker's Codex/Claude templates
 - Codex, Claude Code, and Pi are explicitly installed in our Dockerfile
