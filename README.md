@@ -27,7 +27,7 @@ Each launcher will:
 - persist agent state in `~/.homes_for_containers/copilot`
 - reuse the same `ghcr.io/cainiaocome/ai-in-container:main` image
 - run the agent command through interactive `bash` so env from the mapped `~/.bashrc` is available
-- expose KVM, vhost-vsock, and TUN devices, add their device groups, and grant `NET_ADMIN` for VM networking
+- expose KVM, vhost-vsock, and TUN devices when available, including the required device groups and `NET_ADMIN` capability
 - start the selected coding agent with the launcher's configured flags
 
 ## Launcher Behavior
@@ -41,8 +41,9 @@ By default the launchers resume the last session when the agent supports it. Pas
 ## Prerequisites
 
 - Docker installed and running locally
-- `/dev/kvm`, `/dev/vhost-vsock`, and `/dev/net/tun` available on the local Docker daemon host
 - Authentication for the agent you want to use, either through environment variables such as `GH_TOKEN`, `OPENAI_API_KEY`, and `ANTHROPIC_API_KEY`, or via the persisted home directory
+
+The launchers detect `/dev/kvm`, `/dev/vhost-vsock`, and `/dev/net/tun` individually. Missing devices disable only their corresponding VM acceleration or networking feature and do not prevent the agent container from starting.
 
 ## Building Locally
 
