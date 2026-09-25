@@ -26,7 +26,7 @@ RUN apt-get install -y sudo wget git curl \
   iproute2 net-tools lsof htop unzip zip gnupg man-db tree jq \
   rsync postgresql-client shellcheck \
   ansible incus-client \
-  docker.io
+  docker.io docker-compose-v2
 
 RUN usermod -aG docker ubuntu
 
@@ -63,7 +63,6 @@ RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shell
   brew install --cask copilot-cli codex claude-code && \
   brew install ripgrep bat fd fzf uv rclone && \
   brew install gh && \
-  brew install docker-compose && \
   brew install awscli && \
   brew install openjdk@17 maven gradle && \
   brew install kubernetes-cli && \
