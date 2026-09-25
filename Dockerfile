@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   build-essential curl git ca-certificates pkg-config libssl-dev zlib1g-dev libbz2-dev \
   libreadline-dev libsqlite3-dev libncursesw5-dev libgdbm-dev libnss3-dev liblzma-dev \
   libffi-dev tk-dev libncurses-dev wget xz-utils procps git-crypt \
-  iputils-ping dnsutils traceroute iproute2 tcpdump htop lsof strace 
+  iputils-ping dnsutils traceroute iproute2 tcpdump htop lsof strace
 
 # git needs openssh-client
 RUN apt-get install -y openssh-client
@@ -25,7 +25,10 @@ RUN apt-get install -y sudo wget git curl \
   vim less nano bash-completion zsh locales tzdata \
   iproute2 net-tools lsof htop unzip zip gnupg man-db tree jq \
   rsync postgresql-client shellcheck \
-  ansible incus-client
+  ansible incus-client \
+  docker.io
+
+RUN usermod -aG docker ubuntu
 
 RUN ln -snf "/usr/share/zoneinfo/${TZ}" /etc/localtime && \
   echo "${TZ}" > /etc/timezone
@@ -60,7 +63,7 @@ RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shell
   brew install --cask copilot-cli codex claude-code && \
   brew install ripgrep bat fd fzf uv rclone && \
   brew install gh && \
-  brew install docker docker-compose && \
+  brew install docker-compose && \
   brew install awscli && \
   brew install openjdk@17 maven gradle && \
   brew install kubernetes-cli && \
@@ -76,7 +79,8 @@ RUN echo "testenv" > /.python-version
 
 # script will handle initializing pyenv and installing Python versions at runtime
 COPY scripts/install-python.sh /usr/local/bin/install-python.sh
-RUN chmod +x /usr/local/bin/install-python.sh
+COPY scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/install-python.sh /usr/local/bin/docker-entrypoint.sh
 
 USER ubuntu
 WORKDIR /home/ubuntu
@@ -87,4 +91,5 @@ WORKDIR /home/ubuntu
 RUN echo 'export PYENV_ROOT="/home/ubuntu/.pyenv"' >> /home/ubuntu/.profile && \
   echo 'export PATH="$PYENV_ROOT/bin:$PYENV_ROOT/shims:/home/linuxbrew/.linuxbrew/bin:$PATH"' >> /home/ubuntu/.profile
 
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["bash"]
