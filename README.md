@@ -10,6 +10,7 @@ A Docker image based on Ubuntu 24.04 with the major terminal-first coding agents
 - **pyenv** for Python version management
 - **Python 3.14.2** with performance optimizations
 - **AI agents**: GitHub Copilot CLI, Codex CLI, Claude Code, Pi Coding Agent
+- **Docker-in-Docker**: each agent container starts its own Docker daemon
 - **Modern CLI tools**: ripgrep, bat, fd, fzf, uv, jq, tree, ShellCheck
 
 ## Quick Start
@@ -26,9 +27,21 @@ Each launcher will:
 - mount your current directory to `/app/{folder-name}` in the container
 - persist agent state in `~/.homes_for_containers/copilot`
 - reuse the same `ghcr.io/cainiaocome/ai-in-container:main` image
+- run the container with `--privileged` so its internal Docker daemon can run
+- start an isolated Docker daemon inside the agent container; the host Docker socket is not mounted
 - run the agent command through interactive `bash` so env from the mapped `~/.bashrc` is available
 - expose KVM, vhost-vsock, and TUN devices when available, including the required device groups and `NET_ADMIN` capability
 - start the selected coding agent with the launcher's configured flags
+
+Inside an agent session, Docker works normally:
+
+```bash
+docker info
+docker run --rm hello-world
+docker compose up -d
+```
+
+The nested Docker state is ephemeral by default. Because the outer agent container is started with `--rm`, its images, containers, volumes, and build cache disappear with the agent container.
 
 ## Launcher Behavior
 
@@ -41,6 +54,7 @@ By default the launchers resume the last session when the agent supports it. Pas
 ## Prerequisites
 
 - Docker installed and running locally
+- A host that permits privileged containers
 - Authentication for the agent you want to use, either through environment variables such as `GH_TOKEN`, `OPENAI_API_KEY`, and `ANTHROPIC_API_KEY`, or via the persisted home directory
 
 The launchers detect `/dev/kvm`, `/dev/vhost-vsock`, and `/dev/net/tun` individually. Missing devices disable only their corresponding VM acceleration or networking feature and do not prevent the agent container from starting.
