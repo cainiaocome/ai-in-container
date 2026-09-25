@@ -46,3 +46,8 @@ jobs:
           context: .
           push: true
           tags: ${{ steps.vars.outputs.tags }}
+
+      - name: Test Docker-in-Docker
+        run: |
+          docker run --rm --privileged "${{ steps.vars.outputs.tags }}" \
+            bash -lc 'docker info >/dev/null && docker run --rm hello-world'
