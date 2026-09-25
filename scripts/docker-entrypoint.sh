@@ -15,7 +15,7 @@ cleanup() {
 
 trap cleanup EXIT INT TERM
 
-for _ in $(seq 1 300); do
+for _ in $(seq 1 30); do
   if docker info >/dev/null 2>&1; then
     exec "$@"
   fi
