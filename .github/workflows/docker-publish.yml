@@ -49,5 +49,5 @@ jobs:
 
       - name: Test Docker-in-Docker
         run: |
-          docker run --rm --privileged "${{ steps.vars.outputs.tags }}" \
+          docker run --rm --privileged -v /var/lib/docker "${{ steps.vars.outputs.tags }}" \
             bash -lc 'docker info >/dev/null && docker run --rm hello-world'
