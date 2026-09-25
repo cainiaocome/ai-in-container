@@ -38,6 +38,7 @@ agent_here_build_docker_args() {
   AGENT_HERE_DOCKER_ARGS=(
     --rm
     -it
+    --privileged
     --name "${AGENT_HERE_CONTAINER_NAME}"
     -v "${AGENT_HERE_HOME_DIR_ON_HOST}:${AGENT_HERE_HOME_DIR_IN_CONTAINER}"
     -v "${PWD}:${AGENT_HERE_WORKDIR}"
