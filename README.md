@@ -7,7 +7,7 @@ A Docker image based on Ubuntu 24.04 with the major terminal-first coding agents
 - **Ubuntu 24.04** base image
 - **Timezone**: America/St_Johns (NST/NDT)
 - **Homebrew** package manager
-- **Python 3** from Ubuntu packages for system tooling and Playwright support
+- **Python 3** from Ubuntu packages, with built-in `venv` support
 - **AI agents**: GitHub Copilot CLI, Codex CLI, Claude Code, Pi Coding Agent
 - **Docker-in-Docker**: each agent container starts its own Docker daemon
 - **Modern CLI tools**: ripgrep, bat, fd, fzf, uv, jq, tree, ShellCheck
@@ -41,6 +41,18 @@ docker compose up -d
 ```
 
 The nested Docker state is ephemeral by default. Because the outer agent container is started with `--rm`, its images, containers, volumes, and build cache disappear with the agent container.
+
+## Python Virtual Environments
+
+Create and activate a project-local environment with the system Python:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+```
+
+The image uses Ubuntu's system Python. `venv` isolates project packages but does not install or switch Python versions.
 
 ## Launcher Behavior
 

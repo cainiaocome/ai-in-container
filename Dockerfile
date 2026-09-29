@@ -20,7 +20,8 @@ RUN apt-get install -y sudo wget git curl \
   iproute2 net-tools lsof htop unzip zip gnupg man-db tree jq \
   rsync postgresql-client shellcheck \
   ansible incus-client \
-  docker.io docker-compose-v2
+  docker.io docker-compose-v2 \
+  python3 python3-pip python3-venv
 
 RUN usermod -aG docker ubuntu
 
@@ -34,7 +35,6 @@ RUN wget -O- https://apt.releases.hashicorp.com/gpg | \
   apt-get update && apt-get install -y terraform
 
 # chromium dependencies for playwright
-RUN apt-get install -y python3 python3-pip python3-venv
 RUN python3 -m venv /tmp/playwright-venv && \
   /tmp/playwright-venv/bin/pip install playwright && \
   /tmp/playwright-venv/bin/playwright install-deps chromium && \
