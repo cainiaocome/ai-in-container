@@ -4,17 +4,11 @@ ENV DEBIAN_FRONTEND=noninteractive \
   TZ=America/St_Johns \
   HOME=/home/ubuntu \
   NPM_CONFIG_MIN_RELEASE_AGE=7 \
-  PYENV_ROOT=/home/ubuntu/.pyenv \
-  PATH=/home/ubuntu/.pyenv/bin:/home/ubuntu/.pyenv/shims:/home/linuxbrew/.linuxbrew/bin:$PATH \
-  PYTHON_CONFIGURE_OPTS="--enable-optimizations --with-lto" \
-  CFLAGS="-O3 -march=native -fomit-frame-pointer -funroll-loops -pipe" \
-  LDFLAGS="-Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now"
+  PATH=/home/linuxbrew/.linuxbrew/bin:$PATH
 
-# python dependencies
+# build and system utilities
 RUN apt-get update && apt-get install -y --no-install-recommends \
-  build-essential curl git ca-certificates pkg-config libssl-dev zlib1g-dev libbz2-dev \
-  libreadline-dev libsqlite3-dev libncursesw5-dev libgdbm-dev libnss3-dev liblzma-dev \
-  libffi-dev tk-dev libncurses-dev wget xz-utils procps git-crypt \
+  build-essential curl git ca-certificates pkg-config wget xz-utils procps git-crypt \
   iputils-ping dnsutils traceroute iproute2 tcpdump htop lsof strace
 
 # git needs openssh-client
@@ -49,17 +43,15 @@ RUN python3 -m venv /tmp/playwright-venv && \
 # create a non-root user to install Homebrew
 RUN chown -R ubuntu:ubuntu /home/ubuntu
 
-# install Homebrew (non-interactive) and pyenv via brew using ubuntu+sudown
+# install Homebrew (non-interactive) using ubuntu+sudown
 WORKDIR /root
 RUN echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/ubuntu && chmod 0440 /etc/sudoers.d/ubuntu
 
 # run installer as ubuntu (has sudo) non-interactively
 RUN su - ubuntu -c "NONINTERACTIVE=1 /bin/bash -lc 'curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | /bin/bash'"
 
-# ensure brew is available and install pyenv as ubuntu
+# ensure brew is available and install tools as ubuntu
 RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\" && \
-  brew install pyenv && \
-  brew install pyenv-virtualenv && \
   brew install --cask copilot-cli codex claude-code && \
   brew install ripgrep bat fd fzf uv rclone && \
   brew install gh && \
@@ -73,22 +65,14 @@ RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shell
   npm install -g typescript && \
   npm install -g --ignore-scripts @earendil-works/pi-coding-agent'"
 
-# default pyenv
-RUN echo "testenv" > /.python-version
-
-# script will handle initializing pyenv and installing Python versions at runtime
-COPY scripts/install-python.sh /usr/local/bin/install-python.sh
 COPY scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/install-python.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 USER ubuntu
 WORKDIR /home/ubuntu
 
-# persist env for interactive shells
-# not necessary though, we have defined environment variable globally at head already
-# the home folder is mounted as well
-RUN echo 'export PYENV_ROOT="/home/ubuntu/.pyenv"' >> /home/ubuntu/.profile && \
-  echo 'export PATH="$PYENV_ROOT/bin:$PYENV_ROOT/shims:/home/linuxbrew/.linuxbrew/bin:$PATH"' >> /home/ubuntu/.profile
+# keep Homebrew tools available in login shells
+RUN echo 'export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"' >> /home/ubuntu/.profile
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["bash"]

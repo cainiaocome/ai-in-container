@@ -7,8 +7,7 @@ A Docker image based on Ubuntu 24.04 with the major terminal-first coding agents
 - **Ubuntu 24.04** base image
 - **Timezone**: America/St_Johns (NST/NDT)
 - **Homebrew** package manager
-- **pyenv** for Python version management
-- **Python 3.14.2** with performance optimizations
+- **Python 3** from Ubuntu packages for system tooling and Playwright support
 - **AI agents**: GitHub Copilot CLI, Codex CLI, Claude Code, Pi Coding Agent
 - **Docker-in-Docker**: each agent container starts its own Docker daemon
 - **Modern CLI tools**: ripgrep, bat, fd, fzf, uv, jq, tree, ShellCheck
