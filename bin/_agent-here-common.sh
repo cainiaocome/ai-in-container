@@ -66,6 +66,12 @@ agent_here_build_docker_args() {
       --cap-add=NET_ADMIN
     )
   fi
+
+  local additional_argument
+  while IFS= read -r additional_argument || [[ -n "$additional_argument" ]]; do
+    [[ -z "$additional_argument" ]] && continue
+    AGENT_HERE_DOCKER_ARGS+=("$additional_argument")
+  done <<< "${ADDITIONAL_DOCKER_ARGUMENTS:-}"
 }
 
 agent_here_run() {

@@ -62,6 +62,39 @@ The image uses Ubuntu's system Python. `venv` isolates project packages but does
 
 By default the launchers resume the last session when the agent supports it. Pass `-n` or `--new` to start a fresh session instead. For `pi-here`, `-n` is intentionally reserved for starting a new session; rename a Pi session from inside Pi with `/name`.
 
+### Additional Docker Arguments
+
+All three launchers accept `ADDITIONAL_DOCKER_ARGUMENTS` as trusted caller configuration containing Docker options and their values. Use one literal Docker argument per line: an option and its value occupy separate lines unless using Docker's `--option=value` form. Spaces within a line are preserved, empty lines are ignored, and an unset or empty variable adds nothing. Arguments cannot contain embedded newlines. Shell quotes and expressions are passed literally; they are not interpreted or expanded by the launcher.
+
+```bash
+ADDITIONAL_DOCKER_ARGUMENTS="--env
+EXAMPLE_MESSAGE=hello world" pi-here
+```
+
+These arguments are appended after the default and device options, before the image name. Supply only Docker options and their values, not an image name or container command. Duplicate or conflicting options follow Docker's behavior; do not rely on them to override launcher defaults.
+
+### Review an Original Repository
+
+In a `review-here` wrapper, capture the original directory before changing directories, create the review workspace and output directory, and mount the original repository read-only instead of copying it with `rsync`:
+
+```bash
+CURRENT_DIR="$(pwd -P)"
+PROJECT_NAME="$(basename "$CURRENT_DIR")"
+REVIEW_DIR="$HOME/pi-reviews/$PROJECT_NAME"
+
+mkdir -p "$REVIEW_DIR/$PROJECT_NAME" "$REVIEW_DIR/review-output"
+# Generate agents.md in REVIEW_DIR as before.
+cd "$REVIEW_DIR"
+
+ADDITIONAL_DOCKER_ARGUMENTS="--mount
+type=bind,source=$CURRENT_DIR,target=/app/$PROJECT_NAME/$PROJECT_NAME,readonly" \
+  pi-here
+```
+
+The existing workspace mount stays writable, while the nested project mount reads the original repository without duplicating it. Host edits are visible during review. Commands that write into the project must redirect their output elsewhere, such as `review-output`. Docker's mount syntax has its own escaping rules for unusual paths, including paths containing commas.
+
+Existing copies under the review workspace require deliberate cleanup; mounting over them does not reclaim their disk space.
+
 ## Prerequisites
 
 - Docker installed and running locally
