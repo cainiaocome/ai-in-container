@@ -18,7 +18,7 @@ RUN apt-get install -y openssh-client
 RUN apt-get install -y sudo wget git curl \
   vim less nano bash-completion zsh locales tzdata \
   iproute2 net-tools lsof htop unzip zip gnupg man-db tree jq \
-  rsync postgresql-client shellcheck \
+  rsync postgresql-client shellcheck file sqlite3 socat \
   ansible incus-client \
   docker.io docker-compose-v2 \
   python3 python3-pip python3-venv
@@ -53,7 +53,7 @@ RUN su - ubuntu -c "NONINTERACTIVE=1 /bin/bash -lc 'curl -fsSL https://raw.githu
 # ensure brew is available and install tools as ubuntu
 RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\" && \
   brew install --cask copilot-cli codex claude-code && \
-  brew install ripgrep bat fd fzf uv rclone && \
+  brew install ripgrep bat fd fzf uv rclone yq && \
   brew install gh && \
   brew install awscli && \
   brew install openjdk@17 maven gradle && \
