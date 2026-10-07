@@ -6,7 +6,9 @@ readonly AGENT_HERE_HOME_DIR_IN_CONTAINER="/home/ubuntu"
 
 agent_here_init() {
   AGENT_HERE_SCRIPT_NAME="$(basename -- "$0")"
-  AGENT_HERE_CONTAINER_NAME="${AGENT_HERE_CONTAINER_NAME:-$AGENT_HERE_SCRIPT_NAME}"
+  AGENT_HERE_SUBFOLDER_NAME="$(basename -- "$PWD")"
+  local project_name="${AGENT_HERE_SUBFOLDER_NAME//[^a-zA-Z0-9_.-]/-}"
+  AGENT_HERE_CONTAINER_NAME="${AGENT_HERE_CONTAINER_NAME:-${AGENT_HERE_SCRIPT_NAME}-${project_name}}"
   AGENT_HERE_HOME_DIR_ON_HOST="${AGENT_HERE_HOME_DIR_ON_HOST:-$HOME/.homes_for_containers/copilot}"
   AGENT_HERE_NEW_SESSION=0
   AGENT_HERE_ARGS=()
@@ -22,14 +24,20 @@ agent_here_init() {
     esac
   done
 
-  AGENT_HERE_SUBFOLDER_NAME="$(basename -- "$PWD")"
   AGENT_HERE_WORKDIR="/app/${AGENT_HERE_SUBFOLDER_NAME}"
 }
 
-agent_here_remove_existing_container() {
-  if [ -n "$(docker ps -aq -f name=^/${AGENT_HERE_CONTAINER_NAME}$)" ]; then
-    docker rm -f "${AGENT_HERE_CONTAINER_NAME}" >/dev/null
-  fi
+agent_here_check_container_name() {
+  local existing_names
+  local existing_name
+  existing_names="$(docker ps -a --format '{{.Names}}')" || return
+
+  while IFS= read -r existing_name; do
+    if [[ "$existing_name" == "$AGENT_HERE_CONTAINER_NAME" ]]; then
+      echo "Warning: container '$AGENT_HERE_CONTAINER_NAME' already exists. Another session may be using it; refusing to start." >&2
+      return 1
+    fi
+  done <<< "$existing_names"
 }
 
 agent_here_build_docker_args() {
@@ -78,7 +86,7 @@ agent_here_run() {
   local -a command=("$@")
   local bash_command='exec "$@"'
 
-  agent_here_remove_existing_container
+  agent_here_check_container_name
   agent_here_build_docker_args
 
   docker run "${AGENT_HERE_DOCKER_ARGS[@]}" "${AGENT_HERE_IMAGE}" \

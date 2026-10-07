@@ -62,6 +62,10 @@ The image uses Ubuntu's system Python. `venv` isolates project packages but does
 
 By default the launchers resume the last session when the agent supports it. Pass `-n` or `--new` to start a fresh session instead. For `pi-here`, `-n` is intentionally reserved for starting a new session; rename a Pi session from inside Pi with `/name`.
 
+Container names include the launcher and current project folder, for example `pi-here-solana-wallet-cli`. This allows sessions in different projects to run concurrently. Folder characters outside `a-z`, `A-Z`, `0-9`, `_`, `.`, and `-` are replaced with `-` in the container name. Projects with the same folder name (or the same normalized name) share the same default container name; set `AGENT_HERE_CONTAINER_NAME` explicitly to distinguish them.
+
+If a container with that exact name already exists, even if stopped, the launcher prints a warning and exits without stopping or removing it. This protects another shell session's work. For a stopped leftover container, inspect it and deliberately remove it before launching again.
+
 ### Additional Docker Arguments
 
 All three launchers accept `ADDITIONAL_DOCKER_ARGUMENTS` as trusted caller configuration containing Docker options and their values. Use one literal Docker argument per line: an option and its value occupy separate lines unless using Docker's `--option=value` form. Spaces within a line are preserved, empty lines are ignored, and an unset or empty variable adds nothing. Arguments cannot contain embedded newlines. Shell quotes and expressions are passed literally; they are not interpreted or expanded by the launcher.
