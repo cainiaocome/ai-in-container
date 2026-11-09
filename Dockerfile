@@ -63,6 +63,7 @@ RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shell
 # install global npm tools
 RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\" && \
   npm install -g typescript && \
+  npm install -g cf@latest && \
   npm install -g --ignore-scripts @earendil-works/pi-coding-agent'"
 
 COPY scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh

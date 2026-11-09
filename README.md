@@ -11,6 +11,7 @@ A Docker image based on Ubuntu 24.04 with the major terminal-first coding agents
 - **AI agents**: GitHub Copilot CLI, Codex CLI, Claude Code, Pi Coding Agent
 - **Docker-in-Docker**: each agent container starts its own Docker daemon
 - **Modern CLI tools**: ripgrep, bat, fd, fzf, uv, jq, yq (Mike Farah), tree, ShellCheck, file, sqlite3, socat
+- **Cloudflare CLI**: `cf`, Cloudflare's unified API and Workers CLI, installed globally from npm
 
 ## Quick Start
 
@@ -53,6 +54,24 @@ python -m pip install -r requirements.txt
 ```
 
 The image uses Ubuntu's system Python. `venv` isolates project packages but does not install or switch Python versions.
+
+## Cloudflare CLI (`cf`)
+
+The image installs Cloudflare's `cf` CLI globally from npm, so it is available in every agent session:
+
+```bash
+cf --version
+cf auth login
+cf cli search "list dns records"
+```
+
+`cf` replaces `wrangler` for Workers projects and drives the rest of the Cloudflare API as well. It is in beta, so commands and configuration can change.
+
+Install notes:
+- It must come from npm (`npm install -g cf`). Homebrew's `cf` formula is an unrelated timestamp-filtering utility, not Cloudflare's CLI.
+- It needs Node.js 22.23+, 24.22+, or 26.12+; the Homebrew Node in the image satisfies this.
+- The image sets `NPM_CONFIG_MIN_RELEASE_AGE=7`, so `cf@latest` resolves to the newest beta published at least 7 days ago. Pinning `cf@beta` or an exact beta that is newer than 7 days fails the build; use `cf@latest` or a pinned version that is already old enough.
+- Auth state is written to `~/.config/cloudflare`. The launchers map `$HOME` to `~/.homes_for_containers/copilot` on the host, so a one-time `cf auth login` survives new sessions.
 
 ## Launcher Behavior
 
