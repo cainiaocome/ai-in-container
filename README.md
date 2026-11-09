@@ -70,7 +70,8 @@ cf cli search "list dns records"
 Install notes:
 - It must come from npm (`npm install -g cf`). Homebrew's `cf` formula is an unrelated timestamp-filtering utility, not Cloudflare's CLI.
 - It needs Node.js 22.23+, 24.22+, or 26.12+; the Homebrew Node in the image satisfies this.
-- The image sets `NPM_CONFIG_MIN_RELEASE_AGE=7`, so `cf@latest` resolves to the newest beta published at least 7 days ago. Pinning `cf@beta` or an exact beta that is newer than 7 days fails the build; use `cf@latest` or a pinned version that is already old enough.
+- The image installs `cf@latest`, not bare `cf`. The `latest` dist-tag currently points at a `1.0.0-beta.x` prerelease, so a bare `cf` install can fall back to the stale `0.15.0` release when npm's `min-release-age` policy is active (as it is on the host, where `NPM_CONFIG_MIN_RELEASE_AGE=7` filters out betas published in the last week).
+- The `su - ubuntu -c ...` build steps reset the environment, so `NPM_CONFIG_MIN_RELEASE_AGE` does not actually apply to npm installs during the image build; builds get the current npm release.
 - Auth state is written to `~/.config/cloudflare`. The launchers map `$HOME` to `~/.homes_for_containers/copilot` on the host, so a one-time `cf auth login` survives new sessions.
 
 ## Launcher Behavior
