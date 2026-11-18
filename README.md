@@ -12,6 +12,7 @@ A Docker image based on Ubuntu 24.04 with the major terminal-first coding agents
 - **Docker-in-Docker**: each agent container starts its own Docker daemon
 - **Modern CLI tools**: ripgrep, bat, fd, fzf, uv, jq, yq (Mike Farah), tree, ShellCheck, file, sqlite3, socat
 - **Cloudflare CLI**: `cf`, Cloudflare's unified API and Workers CLI, installed globally from npm
+- **Browser automation**: `agent-browser` with Chrome for Testing and its system libraries installed
 
 ## Quick Start
 
@@ -73,6 +74,22 @@ Install notes:
 - The image installs `cf@latest`, not bare `cf`. The `latest` dist-tag currently points at a `1.0.0-beta.x` prerelease, so a bare `cf` install can fall back to the stale `0.15.0` release when npm's `min-release-age` policy is active (as it is on the host, where `NPM_CONFIG_MIN_RELEASE_AGE=7` filters out betas published in the last week).
 - The `su - ubuntu -c ...` build steps reset the environment, so `NPM_CONFIG_MIN_RELEASE_AGE` does not actually apply to npm installs during the image build; builds get the current npm release.
 - Auth state is written to `~/.config/cloudflare`. The launchers map `$HOME` to `~/.homes_for_containers/copilot` on the host, so a one-time `cf auth login` survives new sessions.
+
+## Browser Automation (`agent-browser`)
+
+The image ships Vercel Labs' `agent-browser` together with the Linux libraries and Chrome for Testing build it needs, so no download happens on first use:
+
+```bash
+agent-browser open example.com
+agent-browser snapshot -i
+agent-browser close
+```
+
+Install notes:
+- It comes from npm (`agent-browser@latest`). Its postinstall patch of the npm shim is allowed explicitly because npm blocks install scripts by default.
+- `agent-browser install --with-deps` runs at build time, which installs the browser libraries with apt and downloads Chrome for Testing.
+- Chrome lives in `/opt/agent-browser`, outside `$HOME`, because the launchers mount the persisted host home over `/home/ubuntu` and would otherwise hide it. `AGENT_BROWSER_EXECUTABLE_PATH` points at that binary; pass `--executable-path` to use a different browser.
+- `ffmpeg` is not installed, so `agent-browser record` reports a warning; everything else works.
 
 ## Launcher Behavior
 
