@@ -50,4 +50,4 @@ jobs:
       - name: Test Docker-in-Docker
         run: |
           docker run --rm --privileged -v /var/lib/docker "${{ steps.vars.outputs.tags }}" \
-            bash -lc 'docker info >/dev/null && docker run --rm hello-world && cf --version && agent-browser --version && timeout 120 agent-browser open example.com'
+            bash -lc 'docker info >/dev/null && docker run --rm hello-world && cf --version && lightpanda version && agent-browser --version && timeout 120 agent-browser open example.com'

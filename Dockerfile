@@ -34,19 +34,6 @@ RUN wget -O- https://apt.releases.hashicorp.com/gpg | \
   echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(. /etc/os-release && echo "$VERSION_CODENAME") main" > /etc/apt/sources.list.d/hashicorp.list && \
   apt-get update && apt-get install -y terraform
 
-# browser libraries required by Chrome for Testing (the set agent-browser's
-# `install --with-deps` would install, plus xvfb for --headed on a displayless host)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-  libxcb-shm0 libx11-xcb1 libx11-6 libxcb1 libxext6 libxrandr2 libxcomposite1 \
-  libxcursor1 libxdamage1 libxfixes3 libxi6 libxrender1 libxshmfence1 \
-  libgtk-3-0t64 libpangocairo-1.0-0 libpango-1.0-0 libatk1.0-0t64 \
-  libcairo-gobject2 libcairo2 libgdk-pixbuf-2.0-0 libdbus-1-3 \
-  libatk-bridge2.0-0t64 libatspi2.0-0t64 libcups2t64 \
-  libasound2t64 libfreetype6 libfontconfig1 libnss3 libnss3-tools libnspr4 \
-  libdrm2 libxkbcommon0 libgbm1 xvfb \
-  fonts-noto-color-emoji fonts-noto-cjk fonts-freefont-ttf && \
-  rm -rf /var/lib/apt/lists/*
-
 # chromium dependencies for playwright
 RUN python3 -m venv /tmp/playwright-venv && \
   /tmp/playwright-venv/bin/pip install playwright && \
@@ -71,7 +58,8 @@ RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shell
   brew install awscli && \
   brew install openjdk@17 maven gradle && \
   brew install kubernetes-cli && \
-  brew install go node'"
+  brew install go node && \
+  brew install lightpanda-io/browser/lightpanda'"
 
 # install global npm tools
 RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\" && \
@@ -80,18 +68,11 @@ RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shell
   npm install -g --allow-scripts=agent-browser agent-browser@latest && \
   npm install -g --ignore-scripts @earendil-works/pi-coding-agent'"
 
-# agent-browser: download Chrome for Testing. The CLI searches
-# $HOME/.agent-browser/browsers, but the launchers mount the persisted host home
-# over /home/ubuntu, so keep Chrome in /opt and point the CLI there with
-# AGENT_BROWSER_EXECUTABLE_PATH.
-RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\" && agent-browser install'" && \
-  mkdir -p /opt/agent-browser && \
-  mv /home/ubuntu/.agent-browser/browsers/* /opt/agent-browser/ && \
-  ln -sfn "$(ls -d /opt/agent-browser/chrome-* | tail -n 1)/chrome" /opt/agent-browser/chrome && \
-  rm -rf /home/ubuntu/.agent-browser && \
-  chown -R ubuntu:ubuntu /opt/agent-browser
-
-ENV AGENT_BROWSER_EXECUTABLE_PATH=/opt/agent-browser/chrome
+# agent-browser drives Lightpanda (a headless browser built from scratch, ~16x
+# lighter than Chromium) instead of Chrome. Lightpanda needs only glibc, so the
+# Chrome for Testing libraries are not required.
+ENV AGENT_BROWSER_ENGINE=lightpanda \
+  AGENT_BROWSER_NO_VERSION_CHECK=1
 
 COPY scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh

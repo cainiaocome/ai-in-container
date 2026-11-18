@@ -12,7 +12,7 @@ A Docker image based on Ubuntu 24.04 with the major terminal-first coding agents
 - **Docker-in-Docker**: each agent container starts its own Docker daemon
 - **Modern CLI tools**: ripgrep, bat, fd, fzf, uv, jq, yq (Mike Farah), tree, ShellCheck, file, sqlite3, socat
 - **Cloudflare CLI**: `cf`, Cloudflare's unified API and Workers CLI, installed globally from npm
-- **Browser automation**: `agent-browser` with Chrome for Testing and its system libraries installed
+- **Browser automation**: `agent-browser` driving [Lightpanda](https://github.com/lightpanda-io/browser), installed with Homebrew
 
 ## Quick Start
 
@@ -77,7 +77,7 @@ Install notes:
 
 ## Browser Automation (`agent-browser`)
 
-The image ships Vercel Labs' `agent-browser` together with the Linux libraries and Chrome for Testing build it needs, so no download happens on first use:
+The image ships Vercel Labs' `agent-browser` and configures it to drive the Lightpanda headless browser instead of Chrome:
 
 ```bash
 agent-browser open example.com
@@ -86,10 +86,10 @@ agent-browser close
 ```
 
 Install notes:
-- It comes from npm (`agent-browser@latest`). Its postinstall patch of the npm shim is allowed explicitly because npm blocks install scripts by default.
-- `agent-browser install --with-deps` runs at build time, which installs the browser libraries with apt and downloads Chrome for Testing.
-- Chrome lives in `/opt/agent-browser`, outside `$HOME`, because the launchers mount the persisted host home over `/home/ubuntu` and would otherwise hide it. `AGENT_BROWSER_EXECUTABLE_PATH` points at that binary; pass `--executable-path` to use a different browser.
-- `ffmpeg` is not installed, so `agent-browser record` reports a warning; everything else works.
+- `agent-browser` comes from npm (`agent-browser@latest`). Its postinstall patch of the npm shim is allowed explicitly because npm blocks install scripts by default.
+- Lightpanda is installed with Homebrew (`brew install lightpanda-io/browser/lightpanda`) and needs only glibc, so the image does not install Chrome or the GTK/X libraries a Chromium-based setup requires.
+- `AGENT_BROWSER_ENGINE=lightpanda` selects it by default; `AGENT_BROWSER_NO_VERSION_CHECK=1` suppresses the Chrome version warning that does not apply to Lightpanda. Pass `--engine chrome` to switch back, but that also requires installing Chrome.
+- Lightpanda is a separate engine, not Chromium: it does not render pages, so screenshots, PDFs, `--headed`, WebGPU, extensions, and video recording are unavailable. Use the Chrome engine when you need those.
 
 ## Launcher Behavior
 
