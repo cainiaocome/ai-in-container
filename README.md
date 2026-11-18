@@ -86,7 +86,7 @@ agent-browser close
 ```
 
 Install notes:
-- `agent-browser` comes from npm (`agent-browser@latest`). Its postinstall patch of the npm shim is allowed explicitly because npm blocks install scripts by default.
+- `agent-browser` comes from Homebrew (`brew install agent-browser`), which keeps it in the same prefix as `node` and `lightpanda`.
 - Lightpanda is installed with Homebrew (`brew install lightpanda-io/browser/lightpanda`) and needs only glibc, so the image does not install Chrome or the GTK/X libraries a Chromium-based setup requires.
 - `AGENT_BROWSER_ENGINE=lightpanda` selects it by default; `AGENT_BROWSER_NO_VERSION_CHECK=1` suppresses the Chrome version warning that does not apply to Lightpanda. Pass `--engine chrome` to switch back, but that also requires installing Chrome.
 - Lightpanda is a separate engine, not Chromium: it does not render pages, so screenshots, PDFs, `--headed`, WebGPU, extensions, and video recording are unavailable. Use the Chrome engine when you need those.

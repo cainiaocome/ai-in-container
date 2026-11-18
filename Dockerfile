@@ -59,13 +59,13 @@ RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shell
   brew install openjdk@17 maven gradle && \
   brew install kubernetes-cli && \
   brew install go node && \
+  brew install agent-browser && \
   brew install lightpanda-io/browser/lightpanda'"
 
 # install global npm tools
 RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\" && \
   npm install -g typescript && \
   npm install -g cf@latest && \
-  npm install -g --allow-scripts=agent-browser agent-browser@latest && \
   npm install -g --ignore-scripts @earendil-works/pi-coding-agent'"
 
 # agent-browser drives Lightpanda (a headless browser built from scratch, ~16x
