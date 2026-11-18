@@ -84,7 +84,7 @@ RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shell
 # $HOME/.agent-browser/browsers, but the launchers mount the persisted host home
 # over /home/ubuntu, so keep Chrome in /opt and point the CLI there with
 # AGENT_BROWSER_EXECUTABLE_PATH.
-RUN su - ubuntu -c "bash -lc 'agent-browser install'" && \
+RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\" && agent-browser install'" && \
   mkdir -p /opt/agent-browser && \
   mv /home/ubuntu/.agent-browser/browsers/* /opt/agent-browser/ && \
   ln -sfn "$(ls -d /opt/agent-browser/chrome-* | tail -n 1)/chrome" /opt/agent-browser/chrome && \
