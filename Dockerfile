@@ -68,11 +68,12 @@ RUN su - ubuntu -c "bash -lc 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shell
   npm install -g cf@latest && \
   npm install -g --ignore-scripts @earendil-works/pi-coding-agent'"
 
-# agent-browser drives Lightpanda (a headless browser built from scratch, ~16x
-# lighter than Chromium) instead of Chrome. Lightpanda needs only glibc, so the
-# Chrome for Testing libraries are not required.
-ENV AGENT_BROWSER_ENGINE=lightpanda \
-  AGENT_BROWSER_NO_VERSION_CHECK=1
+#### chrome works fine as well, lightpanda does not allow you to set custom ua
+# # agent-browser drives Lightpanda (a headless browser built from scratch, ~16x
+# # lighter than Chromium) instead of Chrome. Lightpanda needs only glibc, so the
+# # Chrome for Testing libraries are not required.
+# ENV AGENT_BROWSER_ENGINE=lightpanda \
+ENV  AGENT_BROWSER_NO_VERSION_CHECK=1
 
 COPY scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
